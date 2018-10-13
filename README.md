@@ -4,7 +4,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
 *Dependencies:*
  - Cern Root (found [here](https://root.cern.ch/building-root))
  - Linux environment for running bash scripts
- - MySQL for database use
+ - MySQL for database use (found [here](https://dev.mysql.com/doc/refman/8.0/en/installing.html))
 
 ---
 ---
