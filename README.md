@@ -2,7 +2,7 @@
 This repository houses code for modeling the response of photomultiplier tubes at very low light conditions. A photomultiplier tube is a device that can detect single photons (light particles) and amplify the signal enough to be detected by very sensitive electronics. Descriptions of the electronics can be found on another repository of mine [here](https://github.com/bradylowe/daq-pves-lab.git).
 
 *Dependencies:*
- - Cern Root (found [here](https://root.cern.ch/building-root)
+ - Cern Root (found [here](https://root.cern.ch/building-root))
  - Linux environment for running bash scripts
  - MySQL for database use
 
