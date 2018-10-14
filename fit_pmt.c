@@ -250,7 +250,7 @@ int fit_pmt(
 	for ( int bb = minPE; bb < maxPE; bb++) {
 		// Set current PE peak in consideration
 		fit_func->GetParameters(back);
-		back[9] = (double)(bb - minPE); //(bb + minPE - 1)
+		back[9] = (double)(bb - minPE + 1); //(bb + minPE - 1)
         	fis_from_fit_pe[bb] = new TF1(Form("pe_fit_%d", bb), the_real_deal_yx_pe, 0, MAX_BIN, N_FIT_PARAMS);
         	fis_from_fit_pe[bb]->SetParameters(back);
         	fis_from_fit_pe[bb]->SetLineStyle(2);
