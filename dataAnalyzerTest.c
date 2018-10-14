@@ -20,7 +20,7 @@
 #include <TLine.h>
 
 
-int run_root(string histogram){
+int dataAnalyzerTest(string histogram){
 
 	createPngFromNumbers(histogram);
 

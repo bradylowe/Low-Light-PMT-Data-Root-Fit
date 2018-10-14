@@ -285,7 +285,7 @@ Double_t the_real_deal_yx_pe(Double_t *x, Double_t *par){
 	qn = par[1] + n * par[5];				// mean of this PE dist
 	sigma_n = sqrt(pow(par[2],2) + n * pow(par[6],2));	// sigma of this PE dist
 	term_1 = xx - qn - par[3] * pow(sigma_n,2);		// expo and erf argument
-	term_11 = xx - qn - par[3] * pow(sigma_n,2)/2.0;	// Error or correction
+	term_11 = xx - qn - par[3] * pow(sigma_n,2) / 2.0;	// Error or correction
 	term_2 = par[1] - qn - par[3] * pow(sigma_n,2);		// Erf argument
 	term_3 = xx - qn;					// xx shifted by PE mean
 
