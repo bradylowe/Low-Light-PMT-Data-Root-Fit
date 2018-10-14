@@ -248,7 +248,7 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	// w - probability of type II background
 	Double_t w0 		= 0.05;
 	Double_t wmin 		= 0.001;
-	Double_t wmax 		= 0.5;
+	Double_t wmax 		= 0.3;
 	// ped - mean of pedestal
 	Double_t ped0 		= getDataPedSig(rootFile, chan, "pedmean");
 	Double_t pedmin 	= off;
@@ -258,7 +258,7 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	Double_t pedrmsmin 	= off;
 	Double_t pedrmsmax 	= off;
 	// alpha - exponential decay rate
-	Double_t alpha0 	= 0.018;
+	Double_t alpha0 	= 0.005;
 	Double_t alphamin 	= off;
 	Double_t alphamax 	= off;
 	// mu - average # of PE's per event
@@ -338,7 +338,7 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 		injmax = inj0 + (inj0 - injmin);
 		// Set the real rate to the compliment
 		real0 = 1.0 - inj0;
-		//realmin = real0; realmax = real0;
+		realmin = 1.0 - injmax; realmax = 1.0 - injmin;
 	}
 
 	if (printSummary > 0) {

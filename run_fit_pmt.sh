@@ -17,10 +17,10 @@
 sqlfile="sql_output.txt"
 
 # This is where images are stored
-im_dir="/media/brady/4be7777f-c84c-40ca-af3a-b8c6e4f2f90d/brady/Projects/fit_pmt/images"
+im_dir="/media/data/Projects/fit_pmt/images"
 
 # This is where data is stored
-data_dir="/media/brady/4be7777f-c84c-40ca-af3a-b8c6e4f2f90d/brady/Projects/fit_pmt/data"
+data_dir="/media/data/Projects/fit_pmt/data"
 
 
 #######################################################
@@ -89,6 +89,9 @@ for item in $* ; do
 	# Single run_id
 	elif [[ ${name} == "run_id" ]] ; then
 		run_id=${val}
+	# Display images through eog when finished
+	elif [[ ${name} == "showImages" ]] ; then
+		showImages=${val}
 	fi	
 done
 
@@ -162,6 +165,7 @@ fi
 
 
 # Initialize lists for loop
+created_pngs=""
 # Loop through all files in list, run macro to create png and numbers each time
 for cur_id in ${run_list} ; do
 
@@ -192,7 +196,7 @@ for cur_id in ${run_list} ; do
 	bothpng=""
 	if [ ${savePNG} -eq 1 ] ; then
 		# Grab the freshly-made png filename from this directory
-		png=$(ls fit_pmt__chi*_runID${1}_fitID${fitID}_log0*.png)
+		png=$(ls fit_pmt__fitID${fitID}_runID${1}_*log0.png)
 		# Get the corresponding log plot filename 
 		logpng=$(echo ${png} | sed 's/log0/log1/g')
 		# Create filename for linear/log montage for this fit_id
@@ -201,6 +205,7 @@ for cur_id in ${run_list} ; do
 		montage -label "%f" -frame 5 -geometry 500x400+1+1 ${png} ${logpng} ${bothpng}
 		# Move the images to the appropriate directories
 		mv ${bothpng} ${im_dir}/png_fit/.
+		created_pngs="${created_pngs} ${im_dir}/png_fit/${bothpng}"
 		rm ${png} ${logpng}
 	fi
 
@@ -208,7 +213,7 @@ for cur_id in ${run_list} ; do
 	nnpng=""
 	nnlogpng=""
 	if [ ${saveNN} -eq 1 ] ; then
-		nnpng=$(ls fit_pmt_nn__chi*_runID${1}_fitID${fitID}_log0*.png)
+		nnpng=$(ls fit_pmt_nn__fitID${fitID}_runID${1}_*log0.png)
 		nnlogpng=$(echo ${nnpng} | sed 's/log0/log1/g')
 		mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/.
 	fi
@@ -243,3 +248,8 @@ for cur_id in ${run_list} ; do
 	fi
 done
 
+if [ ${#showImages} -gt 0 -a ${showImages} -eq 1 ] ; then
+	eog ${created_pngs}
+else
+	echo eog ${created_pngs}
+fi

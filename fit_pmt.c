@@ -20,19 +20,6 @@
 #include <TLine.h>
 
 
-// modified version due to clock trigger (pedestal injection)
-Double_t the_real_deal_yx(Double_t *x, Double_t *par); //signal+background 
-Double_t the_real_deal_yx_pe(Double_t *x, Double_t *par);  //individual PE contributions
-Double_t the_real_deal_yx_bg(Double_t *x, Double_t *par); // background
-// Define global variables to be used in fitting
-Int_t MIN_PE = 1;
-Int_t MAX_PE = 20;
-Int_t NPE = MAX_PE - MIN_PE + 1;
-
-// define constants for use with the above functions
-static const double degtorad = 3.141592653589793 / 180.;
-static const double twopi = 2 * 3.141592653589793;
-
 // FIT A DATA RUN TO FIND THE CONTRIBUTING INDIVIDUAL 
 // PHOTO-ELECTRON (PE) DISTRIBUTION [FOR LOW LIGHT LEVEL
 // PMT DATA]
@@ -82,26 +69,29 @@ int fit_pmt(
 
 	printf("\nEntering fit_pmt.c\n");
 
-	// CHECK CONST PE SETUP
+	// Define constants
+	const Int_t N_FIT_PARAMS = 11;
+        const Int_t MAX_BIN = 4096;
+
+	// Check pe bound setup
 	const int nPE = maxPE - minPE + 1;
 	if ( minPE < 1 || nPE < 0 ) {
 		printf("ERROR\n");
 		return -1;
-	} else {
-		// Update global value for external loops
-		MIN_PE = minPE;
-		MAX_PE = maxPE;
-		NPE = nPE;
-	}
-
-	printf("MIN_PE, MAX_PE, NPE  = %d, %d, %d\n", MIN_PE, MAX_PE, NPE);
+	} 
+	Float_t MIN_PE = (float)(minPE);
+	Float_t MAX_PE = (float)(maxPE);
 
 	// Pack parameters into nice arrays
-	Double_t initial[9] = {w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0};
-	Double_t min[9] = {wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin};
-	Double_t max[9] = {wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax};
+	// First vector is initial conditions, next two vectors are min and max
+	// We must pass in MIN and MAX_PE through the parameters to get them into the fit.
+	// We set MIN_PE minimum bound = maximum bound so the parameter is constrained.
+	// We also constrain MAX_PE the same way.
+	Double_t initial[N_FIT_PARAMS] = {w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0, MIN_PE, MAX_PE};
+	Double_t min[N_FIT_PARAMS] = {wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin, MIN_PE, MAX_PE};
+	Double_t max[N_FIT_PARAMS] = {wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax, MIN_PE, MAX_PE};
 
-        // OPEN DATA FILE
+        // Open .root data file
         printf("Opening file %s\n", rootFile.c_str());
         TFile* f1 = new TFile(rootFile.c_str());
         if ( f1->IsZombie() ) {
@@ -113,7 +103,7 @@ int fit_pmt(
 	string infoFile = rootFile.substr(0, rootFile.length() - 5);
 	infoFile.append(".info");
 
-        // EXTRACT DATA FROM FILE
+        // Extract data from file, read into memory
         TTree* t1 = (TTree*) f1->Get("ntuple");
         if (t1 == NULL) {
                 printf("ERROR ==> Couldn't find \"ntuple\"\n");
@@ -128,48 +118,31 @@ int fit_pmt(
         char chanStr[32];
         char selection[64];
         sprintf(chanStr, "ADC%dl", chan);
-        sprintf(selection, "%s>2&&%s<4096", chanStr, chanStr);
+        sprintf(selection, "%s>2&&%s<%d", chanStr, chanStr, MAX_BIN);
 
-        // CREATE LEAF AND BRANCH
+        // Create leaf and branch from tree
         TLeaf* l1 = t1->GetLeaf(chanStr);
         TBranch* b1 = l1->GetBranch();
 
-        // INITIALIZE HISTOGRAM
+        // Initialize histogram
         Int_t binWidth = 1;
-        Int_t maxbins = 4096;
-        Int_t bins = maxbins / binWidth + 1;
+        Int_t bins = MAX_BIN / binWidth + 1;
         Float_t minR = -0.5 * (Float_t) binWidth;
-        Float_t maxR = maxbins + 0.5 * (Float_t) binWidth;
+        Float_t maxR = MAX_BIN + 0.5 * (Float_t) binWidth;
         TH1F *h_QDC = new TH1F("h_QDC", "QDC spectrum", bins, minR, maxR);
 
-	// SETUP X,Y TITLES OF GRAPH AND COLOR
-        char xTitle[64];
-        char yTitle[64];
-        char Title[64];
-	// x title
-        sprintf(xTitle, "ADC channels");
-        h_QDC->GetXaxis()->SetTitle(xTitle);
-        // y title
-	if (binWidth > 1) sprintf(yTitle, "Events/%dchs", binWidth);
-        else sprintf(yTitle, "Relative amplitude");
-        h_QDC->GetYaxis()->SetTitle(yTitle);
-        // main title
-	sprintf(Title, "Low-light PE fit of r%d", runNum);
-        h_QDC->SetTitle(Title);
-        // fit color?
-	h_QDC->SetLineColor(1);
-
-        // FILL HISTOGRAM
+        // Fill histogram
         for (Int_t entry = 0; entry < b1->GetEntries(); entry++) {
                 b1->GetEntry(entry);
                 h_QDC->Fill(l1->GetValue());
         }
 
-	// GRAB FIT BOUNDS FROM USER THRESHOLDS
+	// Grab fit bounds from user-defined thresholds
+	//  - lowest bin will have at least lowRangeThresh items in it.
 	Int_t low = h_QDC->FindFirstBinAbove(lowRangeThresh);
 	Int_t high = h_QDC->FindLastBinAbove(highRangeThresh);
 
-        // NORMALIZE HISTOGRAM
+        // Normalize integral of histogram to 1 (same scaling for error bar)
         Int_t sum = h_QDC->GetSum();
         for (Int_t curBin = 0; curBin < bins; curBin++) {
 		Float_t curVal = h_QDC->GetBinContent(curBin); 
@@ -177,94 +150,108 @@ int fit_pmt(
                 h_QDC->SetBinError(curBin, sqrt(curVal) / sum);
         }
 
-	///////////////////////////////
-	// define fitting function
-	/////////////////////////////
-	TF1 *fit_func=new TF1("fit_func",the_real_deal_yx,0,4093,9); 
-	// 9 parameters
-	fit_func->SetLineColor(4);
+	// Define fitting function
+	TF1 *fit_func=new TF1("fit_func", the_real_deal_yx, 0, MAX_BIN,N_FIT_PARAMS); 
+	fit_func->SetLineColor(4); // Dark blue
 	fit_func->SetNpx(2000);
 	fit_func->SetLineWidth(2);
-	fit_func->SetParName(0,"W");
-	fit_func->SetParName(1,"Q0");
-	fit_func->SetParName(2,"S0");
-	fit_func->SetParName(3,"alpha");
-	fit_func->SetParName(4,"mu");
-	fit_func->SetParName(5,"Q1");
-	fit_func->SetParName(6,"S1");
-	fit_func->SetParName(7,"inj");
-	fit_func->SetParName(8,"real");
+	// 11 parameters
+	fit_func->SetParName(0, "W");
+	fit_func->SetParName(1, "Q0");
+	fit_func->SetParName(2, "S0");
+	fit_func->SetParName(3, "alpha");
+	fit_func->SetParName(4, "mu");
+	fit_func->SetParName(5, "Q1");
+	fit_func->SetParName(6, "S1");
+	fit_func->SetParName(7, "inj");
+	fit_func->SetParName(8, "real");
+	fit_func->SetParName(9, "MIN_PE");
+	fit_func->SetParName(10, "MAX_PE");
 
 	// Set initial parameters
 	fit_func->SetParameters(initial);
 
 	// Constrain the parameters that need to be constrained
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < N_FIT_PARAMS; i++) {
 		// Check if there is restraint on this param
 		if (min[i] >= 0.0 && max[i] >= 0.0) {
 			// Check if param needs to be fixed
 			if (min[i] == max[i]) fit_func->FixParameter(i, initial[i]);
 			// Otherwise, just bound the param
 			else fit_func->SetParLimits(i, min[i], max[i]);
-			printf("setparlimits: %d, %.3f, %.3f\n", i, min[i], max[i]);
 		}
 	}
 
-	///////////////////////////////
-	// set minimization engine
-	///////////////////////////////
-/*	double arglist[0]=2;
-	int ierflg=0;
-	TMinuit minuit(9);
-	minuit.mnexcm("SET STR",arglist,1,ierflg);
-*/	
 	// Fit to pedestal
 	TF1 *fit_gaus_ped = new TF1("fit_gaus_ped", "gaus", initial[1] - initial[2], initial[1] + initial[2]);
 	h_QDC->Fit(fit_gaus_ped, "RN", "");
-	//h_QDC->Fit(fit_gaus_ped, "RON", "");
-	
-	// Initialize canvas
-	TCanvas *can = new TCanvas("can","can");
-	can->cd();
-	gStyle->SetOptFit(1);
-	TGaxis::SetMaxDigits(3);
+
+	// Setup histogram for printing
+        h_QDC->GetXaxis()->SetTitle("ADC channels");
+        h_QDC->GetYaxis()->SetTitle("Counts (integral normalized)");
+        h_QDC->SetTitle(Form("Low-light PE fit of r%d", runNum));
+	h_QDC->SetLineColor(1);
 	h_QDC->SetMarkerSize(0.7);
 	h_QDC->SetMarkerStyle(20);
 	h_QDC->GetXaxis()->SetTitle("QDC channel");
 	h_QDC->GetYaxis()->SetTitle("Normalized yield");
+	h_QDC->GetXaxis()->SetRangeUser(low, high);
+	
+	// Create canvas and draw histogram
+	TCanvas *can = new TCanvas("can","can");
+	can->cd();
+	gStyle->SetOptFit(1);
+	TGaxis::SetMaxDigits(3);
 	h_QDC->Draw("same");
 
-	// PERFORM FIT, GET RESULTS
-	h_QDC->GetXaxis()->SetRangeUser(low, high);
-	if (fitEngine == 0) 
+	// Define results pointer
+	TFitResultPtr res;
+	// Select fitting technique (chi, likelihood, etc.)
+	// Perform fit
+	switch (fitEngine) { 
+		case 0:
 		// user range, return fit results, use improved fitter
-		TFitResultPtr res = h_QDC->Fit(fit_func, "RSM", "", low, high);
-	else if (fitEngine == 1)
+		res = h_QDC->Fit(fit_func, "RSM", "", low, high);
+		break;
+
+		case 1:
 		// Log likelihood, user range, return fit results, use improved fitter
-		TFitResultPtr res = h_QDC->Fit(fit_func, "LRSM", "", low, high);
-	else if (fitEngine == 2)
+		res = h_QDC->Fit(fit_func, "LRSM", "", low, high);
+		break;
+
+		case 2:
 		// return fit results, use improved fitter
-		TFitResultPtr res = h_QDC->Fit(fit_func, "SM", "");
-	else if (fitEngine == 3)
+		res = h_QDC->Fit(fit_func, "SM", "");
+		break;
+
+		case 3:
 		// Log likelihood, return fit results, use improved fitter
-		TFitResultPtr res = h_QDC->Fit(fit_func, "LSM", "");
-	else if (fitEngine == 4)
+		res = h_QDC->Fit(fit_func, "LSM", "");
+		break;
+
+		case 4:
 		// Better errors w/minos, return fit results, use improved fitter, user range
-		TFitResultPtr res = h_QDC->Fit(fit_func, "ESMR", "");
-	else if (fitEngine == 5)
-		// Better errors w/minos, return fit results, use improved fitter, user range, loglike..
-		TFitResultPtr res = h_QDC->Fit(fit_func, "ESMRL", "");
-	double back[10];
+		res = h_QDC->Fit(fit_func, "ESMR", "");
+		break;
+
+		case 5:
+		// Better errors, likelihood, return fit results, use improved fitter, user range
+		res = h_QDC->Fit(fit_func, "ESMRL", "");
+		break;
+	}
+
+	// Create vector and grab return parameters
+	Double_t back[N_FIT_PARAMS];
 	fit_func->GetParameters(back);
 
-	// Make signal distribution functions for printing for user
+	// Make signal distribution functions for showing deconvolution in image
 	TF1 *fis_from_fit_pe[nPE];
-	char fitname[20];
+	// Make one for each PE contribution considered
 	for ( int bb = minPE; bb < maxPE; bb++) {
-		back[9]=(double)(bb + minPE - 1);
+		// Set current PE peak in consideration
 		fit_func->GetParameters(back);
-		sprintf(fitname, "fis_from_fit_pe_%d", bb + minPE - 1);
-        	fis_from_fit_pe[bb] = new TF1(fitname,the_real_deal_yx_pe,0,4093,10);
+		back[9] = (double)(bb - minPE); //(bb + minPE - 1)
+        	fis_from_fit_pe[bb] = new TF1(Form("pe_fit_%d", bb), the_real_deal_yx_pe, 0, MAX_BIN, N_FIT_PARAMS);
         	fis_from_fit_pe[bb]->SetParameters(back);
         	fis_from_fit_pe[bb]->SetLineStyle(2);
 		fis_from_fit_pe[bb]->SetLineColor(2);
@@ -273,16 +260,16 @@ int fit_pmt(
 	}
 
 	// Make background distribution function for printing for user
-	TF1 *fis_from_fit_bg = new TF1("fis_from_fit_bg",the_real_deal_yx_bg,0,4000,9);
+	TF1 *fis_from_fit_bg = new TF1("fis_from_fit_bg", the_real_deal_yx_bg, 0, MAX_BIN, N_FIT_PARAMS);
 	fis_from_fit_bg->SetParameters(back);
         fis_from_fit_bg->SetLineStyle(2);
-        fis_from_fit_bg->SetLineColor(7);
+        fis_from_fit_bg->SetLineColor(7); // Cyan
         fis_from_fit_bg->SetNpx(2000);
 	fis_from_fit_bg->Draw("same");
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////	DONE FITTING	//////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+/////////////	DONE FITTING	////////////////////////////
+////////////////////////////////////////////////////////////
 	printf("\nDone fitting. \n");
 
 	// Grab some stats info from the fit
@@ -317,21 +304,20 @@ int fit_pmt(
 	if (chiPerNDF > 1.0) {
 		gainError = gainError * sqrt(chiPerNDF);
 	}
-	Double_t gainPercentError = gainError / gain * 100;
+	Double_t gainPercentError = gainError / gain * 100.0;
 
 	// Set title of graph to display gain measurement
-	sprintf(Title, "gain: (%.2f, %.3f, %.1f%%)", gain, gainError, gainPercentError);
-        h_QDC->SetTitle(Title);
+        h_QDC->SetTitle(Form("gain: (%.2f, %.3f, %.1f%%)", gain, gainError, gainPercentError));
 
 	// DEFINE USER IMAGE FILE AND NN IMAGE FILE
 	char humanPNG[256];
 	char humanLogPNG[256];
 	char nnPNG[256];
 	char nnLogPNG[256];
-	sprintf(humanPNG, "fit_pmt__chi%d_runID%d_fitID%d_log%d.png", int(chiPerNDF), runID, fitID, 0);
-	sprintf(humanLogPNG, "fit_pmt__chi%d_runID%d_fitID%d_log%d.png", int(chiPerNDF), runID, fitID, 1);
-	sprintf(nnPNG, "fit_pmt_nn__chi%d_runID%d_fitID%d_log%d_gain%d_hv%d_ll%d_fitEngine%d_low%d_high%d.png", int(chiPerNDF), runID, fitID, 0, int(gain * 1000), hv, ll, fitEngine, lowRangeThresh, highRangeThresh);
-	sprintf(nnLogPNG, "fit_pmt_nn__chi%d_runID%d_fitID%d_log%d_gain%d_hv%d_ll%d_fitEngine%d_low%d_high%d.png", int(chiPerNDF), runID, fitID, 1, int(gain * 1000), hv, ll, fitEngine, lowRangeThresh, highRangeThresh);
+	sprintf(humanPNG, "fit_pmt__fitID%d_runID%d_chi%d_log%d.png", fitID, runID, (int)(chiPerNDF), 0);
+	sprintf(humanLogPNG, "fit_pmt__fitID%d_runID%d_chi%d_log%d.png", fitID, runID, (int)(chiPerNDF), 1);
+	sprintf(nnPNG, "fit_pmt_nn__fitID%d_runID%d_chi%d_log%d.png", fitID, runID, (int)(chiPerNDF), 0);
+	sprintf(nnLogPNG, "fit_pmt_nn__fitID%d_runID%d_chi%d_log%d.png", fitID, runID, (int)(chiPerNDF), 1);
 
 	// IF SAVING HUMAN OUTPUT IMAGE ...
 	if (saveResults > 0) {
@@ -390,222 +376,6 @@ int fit_pmt(
 
 	// Return chi squared per number of degrees of freedom (floored)
 	return (int)(chiPerNDF);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////// sub functions ////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-Double_t the_real_deal_yx(Double_t *x, Double_t *par){
-
-	// [0] = w
-	// [1] = Q0, mean of PED
-	// [2] = sigma_0, RMS of PED
-	// [3] = alpha, decay constant of discrete background
-	// [4] = mu, mean of the entire ADC distribution
-	// [5] = q1, peak of SPE
-	// [6] = sigma1, RMS of SPE
-	// [8] =norm of 1-w term
-	Double_t xx = x[0];
-	Double_t s_real_sum = 0.;
-	Double_t qn, sigma_n, term_1, term_11, term_2, term_3, igne, s_real, igne_is;
-
-	// Loop through all PE peaks to consider
-	for(Int_t i = MIN_PE; i < MAX_PE; i++){
-		// Initialize terms to use in mathematics
-		qn = 0.;
-		sigma_n = 0.;
-		term_1 = 0.;
-		term_11 = 0.;
-		term_2 = 0.;
-		term_3 = 0.;
-		igne = 0.;
-		s_real = 0.;
-		// Calculate values for this iteration
-		qn = par[1] + i * par[5];				// Mean of this PE
-		sigma_n = sqrt(pow(par[2], 2) + i * pow(par[6], 2));	// Sigma of this PE
-		term_11 = xx - qn - par[3] * pow(sigma_n, 2) / 2;	// 
-		term_1 = xx - qn - par[3] * pow(sigma_n, 2);		// 
-		term_2 = par[1] - qn - par[3] * pow(sigma_n, 2);	// 
-		term_3 = xx - 1 * par[1] - i * par[5];			// 
-		if (term_1 >= 0.) 
-			igne = par[3] / 2.0 * exp(-par[3] * term_11) * (TMath::Erf(fabs(term_2) / sqrt(2.0) / sigma_n) + TMath::Erf(fabs(term_1) / sqrt(2.0) / sigma_n));
-		else 
-			igne = par[3] / 2.0 * exp(-par[3] * term_11) * (TMath::Erf(fabs(term_2) / sqrt(2.0) / sigma_n) - TMath::Erf(fabs(term_1) / sqrt(2.0) / sigma_n));
-
-		s_real = TMath::PoissonI(i, par[4]) * ((1 - par[0]) / sqrt(twopi) / sigma_n * exp(-pow(term_3, 2) / 2 / pow(sigma_n, 2)) + par[0] * igne) * par[8];
-		// Sum up contribution from all PE's
-		s_real_sum += s_real; 
-	}
-	// Calculate background portion
-	Double_t poisson_is = exp(-par[4]);
-	Double_t gaus_is = exp(-pow(xx - par[1], 2) / 2.0 / pow(par[2], 2)) / par[2] / sqrt(twopi);
-	if(xx >= par[1])
-		igne_is = par[3] * exp(-par[3] * (xx - par[1]));
-	else 
-		igne_is = 0.;
-	Double_t s_real_sum_bg = poisson_is * ((1 - par[0]) * gaus_is + par[0] * igne_is) * par[8]; 
-	// add in clock contribution
-	double clock_contribution=par[7]*((1 - par[0]) * gaus_is + par[0] * igne_is);
-	return s_real_sum + s_real_sum_bg + clock_contribution;
-} 
-
-
-Double_t the_real_deal_yx_pe(Double_t *x, Double_t *par){
-
-  // [0] = w, weight of discrete background
-  // [1] = Q0, mean of PED
-  // [2] = sigma_0, RMS of PED
-  // [3] = alpha, decay constant of discrete background
-  // [4] = mu, mean of the entire ADC distribution
-  // [5] = q1, peak of SPE
-  // [6] = sigma1, RMS of SPE
-  
-  // [7] = Norm of clock contribution
-  // [8] =norm of 1-w term
- 
- //[9] P.E components
-  Double_t xx = x[0];
-
-  Double_t s_real_sum = 0.;
-
-  Double_t qn, sigma_n, term_1, term_11, term_2, term_3, igne, s_real, igne_is;
-
-  for(Int_t i = par[9]; i < par[9]+1; i++){
-
-    qn = 0.;
-    sigma_n = 0.;
-    term_1 = 0.;
-    term_11 = 0.;
-    term_2 = 0.;
-    term_3 = 0.;
-    igne = 0.;
-    s_real = 0.;
-
-    qn = par[1] + i * par[5];
-    sigma_n = sqrt(pow(par[2],2) + i * pow(par[6],2));
-    term_1 = xx - qn - par[3] * pow(sigma_n,2);
-    term_11 = xx - qn - par[3] * pow(sigma_n,2)/2.0;     
-    term_2 = par[1] - qn - par[3] * pow(sigma_n,2);
-    term_3 = xx - 1 * par[1] - i * par[5];
-    
-    if (term_1 >= 0.){
-      
-      igne = par[3]/2 * exp(-par[3] * term_11) * (TMath::Erf(fabs(term_2)/sqrt(2)/sigma_n) +
-						  TMath::Erf(fabs(term_1)/sqrt(2)/sigma_n));
-    }
-    else{
-      
-      igne = par[3]/2 * exp(-par[3] * term_11) * (TMath::Erf(fabs(term_2)/sqrt(2)/sigma_n) -
-						  TMath::Erf(fabs(term_1)/sqrt(2)/sigma_n));
-    }
-    
-    s_real = TMath::PoissonI(i,par[4]) * ((1 - par[0])/sqrt(twopi)/sigma_n * 
-					  exp(-pow(term_3,2)/2/pow(sigma_n,2)) +
-					  par[0] * igne)*par[8]; 
-    s_real_sum += s_real; 
-  }
-  
-  
-  return s_real_sum;
-    
-}
-
-Double_t the_real_deal_yx_bg(Double_t *x, Double_t *par){
-
-  // [0] = w, weight of discrete background
-  // [1] = Q0, mean of PED
-  // [2] = sigma_0, RMS of PED
-  // [3] = alpha, decay constant of discrete background
-  // [4] = mu, mean of the entire ADC distribution
-  // [5] = q1, peak of SPE
-  // [6] = sigma1, RMS of SPE
-   
-   // [7] = Norm of clock contribution
-  // [8] =norm of 1-w term
-  
-  
-  Double_t xx = x[0];
-
-  Double_t s_real_sum = 0.;
-
-  Double_t qn, sigma_n, term_1, term_2, term_3, igne, s_real, igne_is;
-
-  Double_t poisson_is = exp(-par[4]);
-  Double_t gaus_is = exp(-pow(xx-par[1],2)/2/pow(par[2],2))/par[2]/sqrt(twopi);
-  
-  if(xx >= par[1]){
-
-    igne_is = par[3] * exp(-par[3]*(xx - par[1]));
-    
-  }
-  
-  else {
-    
-    igne_is = 0.;
-    
-  }
-  
-  Double_t s_real_sum_bg = poisson_is * ((1 - par[0]) * gaus_is + 
-					 par[0] * igne_is)*par[8]; 
-  
-  // add in clock contribution
- double clock_contribution=par[7]*((1-par[0]) * gaus_is +
-                                          par[0] * igne_is);
-
- 
-  return s_real_sum_bg+clock_contribution;
-  //return s_real_sum_bg;
-}
-
-
-Double_t the_real_deal_yx_clock_bg(Double_t *x, Double_t *par){
-
-  // [0] = w, weight of discrete background
-  // [1] = Q0, mean of PED
-  // [2] = sigma_0, RMS of PED
-  // [3] = alpha, decay constant of discrete background
-  // [4] = mu, mean of the entire ADC distribution
-  // [5] = q1, peak of SPE
-  // [6] = sigma1, RMS of SPE
-   
-   // [7] = Norm of clock contribution
-  // [8] =norm of 1-w term
-  
-  
-  Double_t xx = x[0];
-
-  Double_t s_real_sum = 0.;
-
-  Double_t qn, sigma_n, term_1, term_2, term_3, igne, s_real, igne_is;
-
-  Double_t poisson_is = exp(-par[4]);
-  Double_t gaus_is = exp(-pow(xx-par[1],2)/2/pow(par[2],2))/par[2]/sqrt(twopi);
-  
-  if(xx >= par[1]){
-
-    igne_is = par[3] * exp(-par[3]*(xx - par[1]));
-    
-  }
-  
-  else {
-    
-    igne_is = 0.;
-    
-  }
-  
-  Double_t s_real_sum_bg = poisson_is * ((1 - par[0]) * gaus_is + 
-					 par[0] * igne_is)*par[8]; 
-  
-  // add in clock contribution
- double clock_contribution=par[7]*((1-par[0]) * gaus_is +
-                                          par[0] * igne_is);
-
- 
-  return clock_contribution;
 }
 
 
