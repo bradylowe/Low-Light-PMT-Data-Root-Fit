@@ -31,7 +31,7 @@ for png in ${output} ; do
 		query="USE gaindb; UPDATE fit_results SET label=${choice} WHERE human_png='${png}';"
 		mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}"
 		count=$((count + 1))
-		if [ ${count} % 100 -eq 0 ] ; then
+		if [ $((${count} % 100)) -eq 0 ] ; then
 			echo 
 			echo "Labeled ${count} images"
 			echo

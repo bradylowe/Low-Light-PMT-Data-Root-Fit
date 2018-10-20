@@ -320,9 +320,9 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	// Decide which PE peaks to consider 
 	int tempMinPE = 1, tempMaxPE = 20;
 	if (mumin >= 0.0 && mumax > 0.0) {
-		tempMinPE = (int)(mumin) - 5;
+		tempMinPE = (int)(mumin) - 10;
 		if (tempMinPE < 1) tempMinPE = 1;
-		tempMaxPE = (int)(mumax) + 5;
+		tempMaxPE = (int)(mumax) + 15;
 	}
 	const int minPE = tempMinPE;
 	const int maxPE = tempMaxPE;

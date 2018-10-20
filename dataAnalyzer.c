@@ -260,6 +260,24 @@ void createPngFromNumbers(string histogram) {
 	return;
 }
 
+// This function models the distribution of the CAEN v965 ADC.
+// This is the distribution received with or without signal present.
+//
+// This distribution is primarily a single gaussian, but there are two
+// smaller gaussians (all three with similar means). One gaussian has
+// a larger rms than the other two by a few times.
+//
+// 8 parameters describe the three relative amplitudes, means, and rms.
+// The two amplitude parameters are relative to the first and largest
+// gaussian. (mean0, rms0, amp1, mean1, rms1, amp2, mean2, rms2)
+Double_t v965_dist(Double_t *x, Double_t *par) {
+        Double_t gaus1 = 1.0 / par[1] / sqrt(twopi) * exp( - pow((x[0] - par[0]) / par[1], 2) / 2);
+        Double_t gaus2 = par[2] * exp( - pow((x[0] - par[3]) / par[4], 2) / 2);
+        Double_t gaus3 = par[5] * exp( - pow((x[0] - par[6]) / par[7], 2) / 2);
+        return gaus1 + gaus2 + gaus3;
+}
+
+
 // This function takes in the same parameters from the above fit (+1 extra), and returns
 // the signal value from ONLY A SINGLE pe contribution (par[9] = n).
 // This will allow us to draw a deconvoluted picture of the fit.
@@ -268,7 +286,7 @@ Double_t the_real_deal_yx_pe(Double_t *x, Double_t *par){
 	// Grab current x value, current pe, and prepare variables
 	Double_t xx = x[0];
 	Int_t n = (int)(par[9]);
-	Double_t qn, sigma_n, term_1, term_11, term_2, term_3, igne, gn, s_real, igne_is;
+	Double_t qn, sigma_n, term_1, term_11, term_2, term_3, igne, gn, igne_is;
 
 	// Initialize
 	qn = 0.;
@@ -279,7 +297,6 @@ Double_t the_real_deal_yx_pe(Double_t *x, Double_t *par){
 	term_3 = 0.;
 	igne = 0.;
 	gn = 0.;
-	s_real = 0.;
 
 	// Calculate values to be used for this PE 
 	qn = par[1] + n * par[5];				// mean of this PE dist
@@ -349,7 +366,7 @@ Double_t the_real_deal_yx(Double_t *x, Double_t *par){
 	Double_t s_real_sum = 0.;
 	Double_t initial_par9 = par[9];
 	for (int i = (int)(par[9]); i < (int)(par[10]); i++) {
-		par[9] = i;
+		par[9] = (double)(i);
 		s_real_sum += the_real_deal_yx_pe(x, par);
 	}
 	par[9] = initial_par9;

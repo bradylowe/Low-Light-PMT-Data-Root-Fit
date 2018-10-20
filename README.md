@@ -8,7 +8,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 *Quick start:*
  - First, run ./sql_select_runs.sh "hv=2000 AND pmt=1"
- - Then, run ./run_fit_params.sh
+ - Then, run ./run_fit_pmt.sh
  - To view the results of what you just ran (up to 20 fits), execute:
     * mysql -u user -p -e "USE gaindb; SELECT fit_id, gain, chi FROM fit_results ORDER BY fit_id DESC LIMIT 20;"
 
