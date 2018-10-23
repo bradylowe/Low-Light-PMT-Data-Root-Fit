@@ -3,7 +3,7 @@
 im_dir="/media/data/Projects/fit_pmt/images/png_fit/"
 
 # Get list of png filenames
-query="USE gaindb; SELECT human_png FROM fit_results WHERE nn_png IS NOT NULL AND label IS NULL ORDER BY fit_id;"
+query="USE gaindb; SELECT human_png FROM fit_results WHERE nn_png IS NOT NULL AND label IS NOT NULL ORDER BY fit_id;"
 output=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 
 # Now, loop through the items on the list, but
@@ -12,11 +12,9 @@ lastpng=""
 count=0
 for png in ${output} ; do
 	# Show current label
-	query="USE gaindb; SELECT run_id FROM fit_results WHERE human_png = '${png}';"
-	id=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	query="USE gaindb; SELECT hv FROM run_params WHERE run_id=${id};"
-	hv=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	echo "High voltage: ${hv} Volts"
+	query="USE gaindb; SELECT label FROM fit_results WHERE human_png = '${png}';"
+	cur_label=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+	echo "Current label: ${cur_label}"
 	
 	# Show image, save PID, wait for input
 	eog ${im_dir}/${png} &

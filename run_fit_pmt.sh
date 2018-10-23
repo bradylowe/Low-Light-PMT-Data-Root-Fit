@@ -114,11 +114,11 @@ if [ ${#conLL} -eq 0 ] ; then
 fi
 # Initialize low threshold
 if [ ${#low} -eq 0 ] ; then
-	low=15
+	low=1000
 fi
 # Initialize high threshold
 if [ ${#high} -eq 0 ] ; then
-	high=15
+	high=1
 fi
 # Initialize printSum 
 if [ ${#printSum} -eq 0 ] ; then
