@@ -13,7 +13,7 @@ Double_t channelsToGain = 25.0 / 160.2; // (25 fC / chan) / (160.2 fC / electron
 // All inputs into fit_pmt.c should be implemented in this function. This function should provide full
 // functionality of fit_pmt.c while also allowing the user to diagnose and test values as well as record
 // and keep track of previous fits to data files.
-Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
+Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	///// SET UP HARD-CODED VALUES PERTAINING TO PMTS AND LIGHT SOURCE
@@ -295,7 +295,6 @@ Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	// sig - ped. corrected mean of signal
 	Double_t sig0 		= 4.0;
 	// If user sent in initial gain value, use it
-	if (g0 > 0.0) sig0	= g0 * gainToChannels;
 	Double_t sigmin		= off;
 	Double_t sigmax 	= off;
 

@@ -126,6 +126,10 @@ fi
 if [ ${#fitEngine} -eq 0 ] ; then
 	fitEngine=0
 fi
+# Init noExpo to false
+if [ ${#noExpo} -eq 0 ] ; then
+	noExpo=0
+fi
 # Check for filename and grab corresponding run_id
 if [ ${#rootFile} -gt 0 -a ${#run_id} -eq 0 ] ; then
 	run_id=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT run_id FROM run_params WHERE rootfile = '${rootfile}';")
