@@ -13,7 +13,7 @@ Double_t channelsToGain = 25.0 / 160.2; // (25 fC / chan) / (160.2 fC / electron
 // All inputs into fit_pmt.c should be implemented in this function. This function should provide full
 // functionality of fit_pmt.c while also allowing the user to diagnose and test values as well as record
 // and keep track of previous fits to data files.
-int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t printSummary = 0, Int_t constrainInj = 100, Int_t constrainGain = 0, Int_t constrainLL = 0, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Double_t g0 = 0.0, Double_t mu0 = 0.0){
+Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t printSummary = 0, Int_t constrainInj = 100, Int_t constrainGain = 0, Int_t constrainLL = 0, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	///// SET UP HARD-CODED VALUES PERTAINING TO PMTS AND LIGHT SOURCE
@@ -26,60 +26,60 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	Double_t lightLevels[numPMTs][llMapSize] = {0};
 	Double_t hvMap[hvMapSize] = {2000, 1950, 1900, 1850, 1800, 1750, 1700, 1650, 1600, 1550, 1500, 1400, 1300, 1200, 1100, 1000, 900, 800, 700};
 	// Setup PMT 1
-	gainLevels[1][0] = 5.872;
-	gainLevels[1][1] = 5.118;
-	gainLevels[1][2] = 4.461;
-	gainLevels[1][3] = 3.888;
-	gainLevels[1][4] = 3.388;
-	gainLevels[1][5] = 2.952;
-	gainLevels[1][6] = 2.574;
-	gainLevels[1][7] = 2.243;
-	gainLevels[1][8] = 1.955;
-	gainLevels[1][9] = 1.704;
-	gainLevels[1][10] = 1.485;
-	gainLevels[1][11] = 1.128;
-	gainLevels[1][12] = 0.857;
-	gainLevels[1][13] = 0.651;
-	gainLevels[1][14] = 0.494;
-	gainLevels[1][15] = 0.375;
-	gainLevels[1][16] = 0.285;
-	gainLevels[1][17] = 0.217;
-	gainLevels[1][18] = 0.165;
-	lightLevels[1][30] = 0.138;
+	gainLevels[1][0] = 6.23;
+	gainLevels[1][1] = 5.6;
+	gainLevels[1][2] = 5.05;
+	gainLevels[1][3] = 4.5;
+	gainLevels[1][4] = 3.99;
+	gainLevels[1][5] = 3.55;
+	gainLevels[1][6] = 3.10;
+	gainLevels[1][7] = 2.8;
+	gainLevels[1][8] = 2.5;
+	gainLevels[1][9] = 2.2;
+	gainLevels[1][10] = 1.8;
+	gainLevels[1][11] = 1.1;
+	gainLevels[1][12] = 0.7;
+	gainLevels[1][13] = 0.4;
+	gainLevels[1][14] = 0.3;
+	gainLevels[1][15] = 0.2;
+	gainLevels[1][16] = 0.11;
+	gainLevels[1][17] = 0.07;
+	gainLevels[1][18] = 0.04;
+	lightLevels[1][30] = 0.13;
 	lightLevels[1][31] = 0.17;
 	lightLevels[1][32] = 0.191;
 	lightLevels[1][33] = 0.22;
 	lightLevels[1][34] = 0.249;
-	lightLevels[1][35] = 0.30;
+	lightLevels[1][35] = 0.28;
 	lightLevels[1][36] = 0.343;
 	lightLevels[1][37] = 0.4;
 	lightLevels[1][38] = 0.444;
 	lightLevels[1][39] = 0.527;
-	lightLevels[1][40] = 0.64;
+	lightLevels[1][40] = 0.63;
 	lightLevels[1][41] = 0.7;
 	lightLevels[1][42] = 0.8;
 	lightLevels[1][43] = 0.94;
 	lightLevels[1][44] = 1.168;
-	lightLevels[1][45] = 1.3;
+	lightLevels[1][45] = 1.42;
 	lightLevels[1][46] = 1.612;
 	lightLevels[1][47] = 1.931;
 	lightLevels[1][48] = 2.299;
 	lightLevels[1][49] = 2.626;
-	lightLevels[1][50] = 3.0;
+	lightLevels[1][50] = 3.1;
 	lightLevels[1][51] = 3.5;
 	lightLevels[1][52] = 4.066;
 	lightLevels[1][53] = 4.9;
 	lightLevels[1][54] = 5.9;
-	lightLevels[1][55] = 7.1;
+	lightLevels[1][55] = 6.7;
 	lightLevels[1][56] = 8.3;
 	lightLevels[1][57] = 9.7;
 	lightLevels[1][58] = 10.81;
 	lightLevels[1][59] = 11.47;
-	lightLevels[1][60] = 13.0;
-	lightLevels[1][70] = 51.9;
-	lightLevels[1][80] = 156.0;
+	lightLevels[1][60] = 14.2;
+	lightLevels[1][70] = 51.6;
+	lightLevels[1][80] = 155.0;
 	lightLevels[1][90] = 383.0;
-	lightLevels[1][100] = 1200.0;
+	lightLevels[1][100] = 600.0;
 	// Setup PMT 2
 	gainLevels[2][0] = 6.1;
 	gainLevels[2][1] = 5.6;
@@ -245,33 +245,45 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 
 	// Define "off" value
 	Double_t off = -1.0;
+
 	// w - probability of type II background
-	Double_t w0 		= 0.05;
-	Double_t wmin 		= 0.001;
-	Double_t wmax 		= 0.3;
+	Double_t w0 		= 0.01;
+	Double_t wmin 		= 0.0001;
+	Double_t wmax 		= 1.0;
+	// If we are not considering exponential, set these to zero
+	if (noExpo == 1) {
+		w0 = 0.0;
+		wmin = w0;
+		wmax = w0;
+	}
+
 	// ped - mean of pedestal
 	Double_t ped0 		= getDataPedSig(rootFile, chan, "pedmean");
 	Double_t pedmin 	= off;
 	Double_t pedmax 	= off;
+
 	// pedrms - rms of pedestal
 	Double_t pedrms0 	= getDataPedSig(rootFile, chan, "pedrms");
-	Double_t pedrmsmin 	= off;
-	Double_t pedrmsmax 	= off;
+	Double_t pedrmsmin 	= 0.0;
+	Double_t pedrmsmax 	= 10.0;
+
 	// alpha - exponential decay rate
 	Double_t alpha0 	= 0.005;
-	Double_t alphamin 	= off;
-	Double_t alphamax 	= off;
+	Double_t alphamin 	= 0.00001;
+	Double_t alphamax 	= 1.0;
+	// If we are not considering exponential, set these to zero
+	if (noExpo == 1) {
+		alpha0 = 0.0;
+		alphamin = alpha0;
+		alphamax = alpha0;
+	}
+
 	// mu - average # of PE's per event
+	Double_t mu0 = lightLevels[pmt][ll];
+	// Adjust values based on filter setting
+	mu0 = mu0 * filterMap[filter];
 	Double_t mumin = off;
 	Double_t mumax = off;
-	
-	// If the user didn't send value, use defalut
-	if (mu0 == 0.0) {
-		mu0 = lightLevels[pmt][ll];
-		// Adjust values based on filter setting
-		mu0 = mu0 * filterMap[filter];
-	}
-	
 	// If constraining the light level
 	if (constrainLL > 0) {
 		if (constrainLL > 100) constrainLL = 100;
@@ -305,9 +317,9 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 		sigmax = sig0 + sig0 - sigmin;
 	}
 	// sigrms - rms of signal
-	Double_t sigrms0 	= pedrms0;
-	Double_t sigrmsmin 	= off;
-	Double_t sigrmsmax 	= off;
+	Double_t sigrms0 	= 1.8;
+	Double_t sigrmsmin 	= 0.0;
+	Double_t sigrmsmax 	= 2.5;
 	// inj - proportion of data that are injected pedestal
 	Double_t inj0 		= 0.5;
 	Double_t injmin		= 0.0;
@@ -384,8 +396,9 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	// Call the function with the appropriate params
 	return fit_pmt(
 		rootFile, runID, fitID, runNum, daq, chan, pmt, // 7 params
-		dataRate, pedRate, hv, ll, filter, saveResults, // 6 params
-		saveNN, fitEngine, lowRangeThresh, 		// 3 params
+		dataRate, pedRate, hv, ll, filter,		// 5 params
+		conGain, conLL, conInj, noExpo, 		// 4 params
+		saveResults, saveNN, fitEngine, lowRangeThresh, // 4 params
 		highRangeThresh, minPE, maxPE,			// 3 params
 		w0, ped0, pedrms0, alpha0, mu0, 		// 5 params
 		sig0, sigrms0, inj0, real0,			// 4 params
@@ -393,7 +406,7 @@ int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 		sigmin, sigrmsmin, injmin, realmin,		// 4 params
 		wmax, pedmax, pedrmsmax, alphamax, mumax, 	// 5 params
 		sigmax, sigrmsmax, injmax, realmax		// 4 params
-	);							// 44 params
+	);							// 48 params
 }
 
 

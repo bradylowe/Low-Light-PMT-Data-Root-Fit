@@ -44,15 +44,9 @@ for item in $* ; do
 	elif [[ ${val} == "false" || ${val} == "False" ]] ; then
 		val=0
 	fi
-	# Initial gain guess
-	if [[ ${name} == "gain" ]] ; then
-		gain=${val}
 	# Percent gain is allowed to vary
-	elif [[ ${name} == "conGain" ]] ; then
+	if [[ ${name} == "conGain" ]] ; then
 		conGain=${val}
-	# Initial light level guess
-	elif [[ ${name} == "ll" ]] ; then
-		ll=${val}
 	# Percent ll is allowed to vary
 	elif [[ ${name} == "conLL" ]] ; then
 		conLL=${val}
@@ -105,15 +99,15 @@ done
 
 # Initialize no gain constrain
 if [ ${#conGain} -eq 0 ] ; then
-	conGain=0
+	conGain=10
 fi
 # Initialize full ped injection rate constrain
 if [ ${#conInj} -eq 0 ] ; then
-	conInj=100
+	conInj=0
 fi
 # Initialize no light level constraint
 if [ ${#conLL} -eq 0 ] ; then
-	conLL=0
+	conLL=10
 fi
 # Initialize low threshold
 if [ ${#low} -eq 0 ] ; then
@@ -187,7 +181,7 @@ for cur_id in ${run_list} ; do
 		rootOptions="-l"
 	fi
 	# Fit the data, grab chi squared per ndf
-	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${printSum}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine})")
+	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${printSum}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo})")
 	if [ ${printSum} -gt 0 ] ; then
 		echo ${chi2}
 	fi

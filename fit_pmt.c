@@ -28,7 +28,7 @@
 // is callable and fully capable, and yet able to remain hard-coded for
 // a long period of time.
 int fit_pmt(
-	// In gaindb (mysql database)
+	// In gaindb.run_params mysql table
 	string rootFile, 	// File name (something.root)
 	Int_t runID,		// Unique run identifier
 	Int_t fitID, 		// Unique fit identifier
@@ -41,7 +41,11 @@ int fit_pmt(
 	Int_t hv, 		// High voltage used
 	Int_t ll, 		// Light level used (light level 4,60 becomes 46)
 	Int_t filter, 		// Filter used (0 - 8)(0 is closed shutter)
-	// These params can be used to force the function onto solutions
+	// These params can be used to force the function onto solutions.
+	// conGain = 0 means that the fit has 0% wiggle room to deviate from sig0.
+	// conGain = 100 means that it can use the range 0 to  2 * sig0)
+	// conGain = 200 means that it can use the range 0 to  3 * sig0)
+	Int_t conGain, Int_t conLL, Int_t conInj, Int_t noExpo, 
 	// These params are some functionality flags
 	Int_t saveResults, 	// Save output png with stats
 	Int_t saveNN, 		// Save neural network output png and txt
@@ -307,7 +311,7 @@ int fit_pmt(
 	Double_t gainPercentError = gainError / gain * 100.0;
 
 	// Set title of graph to display gain measurement
-        h_QDC->SetTitle(Form("gain: (%.2f, %.3f, %.1f%%)", gain, gainError, gainPercentError));
+        h_QDC->SetTitle(Form("gain: (%.4f, %.4f, %.1f%%)", gain, gainError, gainPercentError));
 
 	// DEFINE USER IMAGE FILE AND NN IMAGE FILE
 	char humanPNG[256];
@@ -358,14 +362,15 @@ int fit_pmt(
 	ofstream file;
 	char queryLine[2048];
 	sprintf(queryLine, 
-		"run_id='%d',fit_engine='%d',fit_low='%d',fit_high='%d',min_pe='%d',max_pe='%d',w_0='%f',ped_0='%f',ped_rms_0='%f',alpha_0='%f',mu_0='%f',sig_0='%f',sig_rms_0='%f',inj_0='%f',real_0='%f',w_min='%f',ped_min='%f',ped_rms_min='%f',alpha_min='%f',mu_min='%f',sig_min='%f',sig_rms_min='%f',inj_min='%f',real_min='%f',w_max='%f',ped_max='%f',ped_rms_max='%f',alpha_max='%f',mu_max='%f',sig_max='%f',sig_rms_max='%f',inj_max='%f',real_max='%f',w_out='%f',ped_out='%f',ped_rms_out='%f',alpha_out='%f',mu_out='%f',sig_out='%f',sig_rms_out='%f',inj_out='%f',real_out='%f',w_out_error='%f',ped_out_error='%f',ped_rms_out_error='%f',alpha_out_error='%f',mu_out_error='%f',sig_out_error='%f',sig_rms_out_error='%f',inj_out_error='%f',real_out_error='%f',chi='%f',gain='%f',gain_error='%f',gain_percent_error='%f'",
+		"run_id='%d',fit_engine='%d',fit_low='%d',fit_high='%d',min_pe='%d',max_pe='%d',w_0='%f',ped_0='%f',ped_rms_0='%f',alpha_0='%f',mu_0='%f',sig_0='%f',sig_rms_0='%f',inj_0='%f',real_0='%f',w_min='%f',ped_min='%f',ped_rms_min='%f',alpha_min='%f',mu_min='%f',sig_min='%f',sig_rms_min='%f',inj_min='%f',real_min='%f',w_max='%f',ped_max='%f',ped_rms_max='%f',alpha_max='%f',mu_max='%f',sig_max='%f',sig_rms_max='%f',inj_max='%f',real_max='%f',w_out='%f',ped_out='%f',ped_rms_out='%f',alpha_out='%f',mu_out='%f',sig_out='%f',sig_rms_out='%f',inj_out='%f',real_out='%f',w_out_error='%f',ped_out_error='%f',ped_rms_out_error='%f',alpha_out_error='%f',mu_out_error='%f',sig_out_error='%f',sig_rms_out_error='%f',inj_out_error='%f',real_out_error='%f',chi='%f',gain='%f',gain_error='%f',gain_percent_error='%f',con_gain='%d', con_ll='%d', con_inj='%d', no_expo='%d'",
 		runID, fitEngine, lowRangeThresh, highRangeThresh, minPE, maxPE,
 		w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0,
         	wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin,
         	wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax,
         	wout, pedout, pedrmsout, alphaout, muout, sigout, sigrmsout, injout, realout,
         	wouterr, pedouterr, pedrmsouterr, alphaouterr, muouterr, sigouterr, sigrmsouterr, injouterr, realouterr,
-        	chi/double(ndf), gain, gainError, gainPercentError
+        	chi/double(ndf), gain, gainError, gainPercentError,
+		conGain, conLL, conInj, noExpo
 	);
 	file.open("sql_output.txt", std::ofstream::out);
 	if (file.is_open()) {
