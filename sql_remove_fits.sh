@@ -35,3 +35,8 @@ for id in ${fits} ; do
 	fi
 	mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; DELETE FROM fit_results WHERE fit_id=${id};"
 done
+
+# update fit_id to lowest unused value greater than highest used value
+newval=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT MAX(fit_id) FROM fit_results;")
+newval=$((newval + 1))
+mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; ALTER TABLE fit_results AUTO_INCREMENT = ${newval};"
