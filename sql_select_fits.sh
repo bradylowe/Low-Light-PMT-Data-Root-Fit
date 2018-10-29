@@ -1,6 +1,8 @@
 
 # Look at input parameters
-if [ $# -eq 1 ] ; then
+if [ $# -eq 0 ] ; then
+	fit_cond="fit_id>0"
+elif [ $# -eq 1 ] ; then
 	fit_cond=$1
 else
 	run_cond=$1
