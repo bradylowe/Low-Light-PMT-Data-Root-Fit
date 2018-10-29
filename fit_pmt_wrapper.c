@@ -13,7 +13,7 @@ Double_t channelsToGain = 25.0 / 160.2; // (25 fC / chan) / (160.2 fC / electron
 // All inputs into fit_pmt.c should be implemented in this function. This function should provide full
 // functionality of fit_pmt.c while also allowing the user to diagnose and test values as well as record
 // and keep track of previous fits to data files.
-Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t printSummary = 0, Int_t constrainInj = 100, Int_t constrainGain = 0, Int_t constrainLL = 0, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
+Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t printSummary = 0, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	///// SET UP HARD-CODED VALUES PERTAINING TO PMTS AND LIGHT SOURCE
@@ -285,11 +285,11 @@ Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	Double_t mumin = off;
 	Double_t mumax = off;
 	// If constraining the light level
-	if (constrainLL > 0) {
-		if (constrainLL > 100) constrainLL = 100;
+	if (constrainLL >= 0) {
 		// Set mumin and max based on constraint
-		mumin = mu0 * (double(constrainLL) * 0.01);
-		mumax = mu0 + (mu0 - mumin);
+		mumin = mu0 * (1.0 - double(constrainLL) * 0.01);
+		if (mumin < 0.0) mumin = 0.0;
+		mumax = mu0 * (1.0 + double(constrainLL) * 0.01);
 	}
 
 	// sig - ped. corrected mean of signal
@@ -300,21 +300,18 @@ Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	Double_t sigmax 	= off;
 
 	// If we are constraining the gain
-	if (constrainGain > 0) {
-		if (constrainGain > 100) constrainGain = 100;
-		// Set the initial gain guess (if needed)
-		if (g0 <= 0.0) {
-			// Loop through defaults for this voltage 
-			for (int b = 0; b < hvMapSize; b++) {
-				if (hv >= hvMap[b]) {
-					sig0 = gainLevels[pmt][b];
-					break;
-				}
+	if (constrainGain >= 0) {
+		// Reverse-lookup defaults for this voltage 
+		for (int b = 0; b < hvMapSize; b++) {
+			if (hv >= hvMap[b]) {
+				sig0 = gainLevels[pmt][b];
+				break;
 			}
 		}
 		// Set the gain bounds based on high voltage setting.
-		sigmin = sig0 * (double(constrainGain) * 0.01);
-		sigmax = sig0 + sig0 - sigmin;
+		sigmin = sig0 * (1.0 - double(constrainGain) * 0.01);
+		if (sigmin < 0.0) sigmin = 0.0;
+		sigmax = sig0 * (1.0 + double(constrainGain) * 0.01);
 	}
 	// sigrms - rms of signal
 	Double_t sigrms0 	= 1.8;
@@ -340,17 +337,19 @@ Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	const int maxPE = tempMaxPE;
 
 	// If we are constraining the pedestal injection, then enforce it here
-	if (constrainInj > 0) {
-		if (constrainInj > 100) constrainInj = 100;
+	if (constrainInj >= 0) {
 		// Calculate injection proportion from data and ped rates
-		if (pedRate == 0 && dataRate == 0) inj0 = 0;
+		if (pedRate == 0 && dataRate == 0) inj0 = 0.0;
 		else inj0 = (double)(pedRate) / (double)(pedRate + dataRate);
 		// Set min and max to initial value to constrain
-		injmin = inj0 * (double(constrainInj) * 0.01); 
-		injmax = inj0 + (inj0 - injmin);
+		injmin = inj0 * (1.0 - double(constrainInj) * 0.01); 
+		if (injmin < 0.0) injmin = 0.0;
+		injmax = inj0 * (1.0 + double(constrainInj) * 0.01); 
 		// Set the real rate to the compliment
 		real0 = 1.0 - inj0;
-		realmin = 1.0 - injmax; realmax = 1.0 - injmin;
+		realmin = real0 * (1.0 - double(constrainInj) * 0.01); 
+		if (realmin < 0.0) realmin = 0.0;
+		realmax = real0 * (1.0 + double(constrainInj) * 0.01); 
 	}
 
 	if (printSummary > 0) {
@@ -397,7 +396,7 @@ Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	return fit_pmt(
 		rootFile, runID, fitID, runNum, daq, chan, pmt, // 7 params
 		dataRate, pedRate, hv, ll, filter,		// 5 params
-		conGain, conLL, conInj, noExpo, 		// 4 params
+		constrainGain, constrainLL, constrainInj, noExpo,// 4 params
 		saveResults, saveNN, fitEngine, lowRangeThresh, // 4 params
 		highRangeThresh, minPE, maxPE,			// 3 params
 		w0, ped0, pedrms0, alpha0, mu0, 		// 5 params

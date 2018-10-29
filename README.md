@@ -36,7 +36,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
     be in any certain order. 
  - The input param list:  
     * gain (initial guess)
-    * conGain (constrain gain param 0-100 percent to accepted value)
+    * conGain (constrain gain param to some percent of best guess)
     * ll (initial light level guess)
     * conLL (constrain ll)
     * pedInj (initial pedestal injection rate guess)
