@@ -14,36 +14,31 @@
 #
 ####################################################################
 
-# Import code
-code_dir="/home/daq/data/brady_code"
-
-# Initialize
-selected_files=""
-# If no arguments, just do all the files in the directory
-if [ $# -eq 0 ] ; then
-	selected_files=$(ls r*.root)
-# Loop through all the input run numbers
-else
-	for run in $(${code_dir}/parse_list.sh $*) ; do
-		# Grab root files with this run number and append them
-		files=$(ls r${run}*.root)
-		selected_files="${selected_files} ${files}"
-	done
-fi
-
+old_dir=$(pwd)
+cd /media/data/Projects/fit_pmt/data
+selected_files=$(ls daq3/r*.root)
+selected_files="${selected_files} $(ls daq5/r*.root)"
 
 # SET INPUT VALUE FOR ALL SELECTED RUNS
 for rootfile in ${selected_files} ; do
+
+	# Skip this one if already in database
+	query="USE gaindb; SELECT run_id FROM run_params WHERE rootfile='${rootfile}';"
+	res=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+	if [ ${#res} -gt 0 ] ; then
+		continue
+	fi
 
 	# Make datafile name from rootfile name
 	datafile="${rootfile%.root}.dat"
 
 	# Initialize values that might be read from the filename
 	adc="v965ST"
-	daq=3
+	daq=$(echo ${rootfile} | awk -F'/' '{print $1}')
+	daq=${daq:3}
 
-	# Remove leading 'r' and '.root'
-	run_num=${rootfile:1}
+	# Remove leading 'daq?/r' and '.root'
+	run_num=${rootfile:6}
 	run_num=${run_num%.root}
 	# Filename is of style r123_v965ST_5.root
 	if [ $(echo ${run_num} | grep v965ST) ] ; then	
@@ -74,7 +69,7 @@ for rootfile in ${selected_files} ; do
 	base=1
 	iped=40
 	hv=2000
-	datarate=3000
+	datarate=3500
 	pedrate=400
 	filter=7
 	nevents=500000

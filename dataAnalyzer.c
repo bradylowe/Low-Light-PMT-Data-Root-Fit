@@ -373,4 +373,3 @@ Double_t the_real_deal_yx(Double_t *x, Double_t *par){
 	Double_t s_bg = the_real_deal_yx_bg(x, par);
 	return s_real_sum + s_bg;
 }
-

@@ -1,12 +1,12 @@
 
-data_dir="/media/brady/4be7777f-c84c-40ca-af3a-b8c6e4f2f90d/brady/Projects/fit_pmt/data"
+data_dir="/media/data/Projects/fit_pmt/data"
 runs=$(head selected_runs.txt)
 
 if [ $# -eq 1 ] ; then
-	savePNG=$1
-else
-	savePNG=0
+	runs=$1
 fi
+
+savePNG=0
 
 for run_id in ${runs} ; do
 	rootfile=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT rootfile FROM run_params WHERE run_id=${run_id};")

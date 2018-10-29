@@ -62,6 +62,9 @@ for item in $* ; do
 	# Percent pedInj is allowed to vary
 	elif [[ ${name} == "conInj" ]] ; then
 		conInj=${val}
+	# Get rid of exponential
+	elif [[ ${name} == "noExpo" ]] ; then
+		noExpo=${val}
 	# Root Filename (if null, all will be used)
 	elif [[ ${name} == "rootFile" ]] ; then
 		rootFile=${val}
@@ -248,8 +251,3 @@ for cur_id in ${run_list} ; do
 	fi
 done
 
-if [ ${#showImages} -gt 0 -a ${showImages} -eq 1 ] ; then
-	eog ${created_pngs}
-else
-	echo eog ${created_pngs}
-fi
