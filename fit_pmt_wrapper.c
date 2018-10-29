@@ -13,7 +13,7 @@ Double_t channelsToGain = 25.0 / 160.2; // (25 fC / chan) / (160.2 fC / electron
 // All inputs into fit_pmt.c should be implemented in this function. This function should provide full
 // functionality of fit_pmt.c while also allowing the user to diagnose and test values as well as record
 // and keep track of previous fits to data files.
-Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t printSummary = 0, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
+Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	///// SET UP HARD-CODED VALUES PERTAINING TO PMTS AND LIGHT SOURCE
@@ -326,16 +326,6 @@ Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 	Double_t realmin 	= 0.0;
 	Double_t realmax 	= 1.0;
 
-	// Decide which PE peaks to consider 
-	int tempMinPE = 1, tempMaxPE = 20;
-	if (mumin >= 0.0 && mumax > 0.0) {
-		tempMinPE = (int)(mumin) - 10;
-		if (tempMinPE < 1) tempMinPE = 1;
-		tempMaxPE = (int)(mumax) + 15;
-	}
-	const int minPE = tempMinPE;
-	const int maxPE = tempMaxPE;
-
 	// If we are constraining the pedestal injection, then enforce it here
 	if (constrainInj >= 0) {
 		// Calculate injection proportion from data and ped rates
@@ -352,46 +342,15 @@ Int fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int
 		realmax = real0 * (1.0 + double(constrainInj) * 0.01); 
 	}
 
-	if (printSummary > 0) {
-		// Print out to the user a summary of this run and
-		// this fit on this run.
-		printf("  ##  Summary for this fit  ##  \n");
-		printf("  #########################################  \n"); // 9 parameters
-		printf("  runID:    %d \n", runID);
-		printf("  run:      %d \n", runNum);
-		printf("  daq:      %d \n", daq);
-		printf("  chan:     %d \n", chan);
-		printf("  pmt:      %d \n", pmt);
-		printf("  base:      %d \n", base);
-		printf("  datarate: %d \n", dataRate);
-		printf("  pedrate:  %d \n", pedRate);
-		printf("  hv:       %d \n", hv);
-		printf("  ll:       %d \n", ll);
-		printf("  filter:   %d \n", filter);
-		printf("  #########################################  \n"); // 10 parameters
-		printf("  ConstrainInj:%d \n", constrainInj);
-		printf("  ConstrainGain:%d \n", constrainGain);
-		printf("  ConstrainLL:%d \n", constrainLL);
-		printf("  SaveHuman:%d \n", saveResults);
-		printf("  SaveNN:   %d \n", saveNN);
-		printf("  FitEng:   %d \n", fitEngine);
-		printf("  LowThresh:%d \n", lowRangeThresh);
-		printf("  HighThresh:%d \n", highRangeThresh);
-		printf("  minPE:    %d \n", minPE);
-		printf("  maxPE:    %d \n", maxPE);
-		printf("  #########################################  \n"); // 27 parameters
-		printf("  \tinitial \tmin \t\tmax \n");
-		printf("   w:      %.4f \t %.4f \t %.4f \n", w0, wmin, wmax);
-		printf("   ped:    %.4f \t %.4f \t %.4f \n", ped0, pedmin, pedmax);
-		printf("   pedrms: %.4f \t %.4f \t %.4f \n", pedrms0, pedrmsmin, pedrmsmax);
-		printf("   alpha:  %.4f \t %.4f \t %.4f \n", alpha0, alphamin, alphamax);
-		printf("   mu:     %.4f \t %.4f \t %.4f \n", mu0, mumin, mumax);
-		printf("   sig:    %.4f \t %.4f \t %.4f \n", sig0, sigmin, sigmax);
-		printf("   sigrms: %.4f \t %.4f \t %.4f \n", sigrms0, sigrmsmin, sigrmsmax);
-		printf("   inj:    %.4f \t %.4f \t %.4f \n", inj0, injmin, injmax);
-		printf("   real:   %.4f \t %.4f \t %.4f \n", real0, realmin, realmax);
-		printf("  #########################################  \n");
+	// Decide which PE peaks to consider 
+	int tempMinPE = 1, tempMaxPE = 20;
+	if (mu0 > 10.0) {
+		tempMinPE = (int)(mu0 - 2.0 * sqrt(mu0));
+		tempMaxPE = (int)(mu0 - 2.0 * sqrt(mu0));
 	}
+	const int minPE = tempMinPE;
+	const int maxPE = tempMaxPE;
+
 	// Call the function with the appropriate params
 	return fit_pmt(
 		rootFile, runID, fitID, runNum, daq, chan, pmt, // 7 params

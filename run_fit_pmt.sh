@@ -71,9 +71,6 @@ for item in $* ; do
 	# Fit engine option choice (integer)
 	elif [[ ${name} == "fitEngine" ]] ; then
 		fitEngine=${val}
-	# Print summary of this fit to screen (true/false)
-	elif [[ ${name} == "printSum" ]] ; then
-		printSum=${val}
 	# Save png output (human format)
 	elif [[ ${name} == "savePNG" ]] ; then
 		savePNG=${val}
@@ -116,10 +113,6 @@ fi
 # Initialize high threshold
 if [ ${#high} -eq 0 ] ; then
 	high=1
-fi
-# Initialize printSum 
-if [ ${#printSum} -eq 0 ] ; then
-	printSum=0
 fi
 # Initialize savePNG
 if [ ${#savePNG} -eq 0 ] ; then
@@ -181,10 +174,7 @@ for cur_id in ${run_list} ; do
 		rootOptions="-l"
 	fi
 	# Fit the data, grab chi squared per ndf
-	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${printSum}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo})")
-	if [ ${printSum} -gt 0 ] ; then
-		echo ${chi2}
-	fi
+	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo})")
 	chi2=$(echo ${chi2} | awk -F' ' '{print $NF}')
 	
 	# Process the human-viewable output pngs
