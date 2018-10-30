@@ -117,31 +117,31 @@ for rootfile in ${selected_files} ; do
 	##################################################
 	read -p "Enter datarate (${datarate}): " val
 	# If the user sent something, grab it
-        if [ ${#val} -gt 1 ] ; then
+        if [ ${#val} -gt 0 ] ; then
 		datarate=${val}
         fi
 	##################################################
 	read -p "Enter pedrate (${pedrate}): " val
 	# If the user sent something, grab it
-        if [ ${#val} -gt 1 ] ; then
+        if [ ${#val} -gt 0 ] ; then
 		pedrate=${val}
         fi
 	##################################################
 	read -p "Enter ll (${ll}): " val
 	# If the user sent something, grab it
-        if [ ${#val} -gt 1 ] ; then
+        if [ ${#val} -gt 0 ] ; then
 		ll=${val}
         fi
 	##################################################
 	read -p "Enter filter (${filter}): " val
 	# If the user sent something, grab it
-        if [ ${#val} -gt 1 ] ; then
+        if [ ${#val} -gt 0 ] ; then
 		filter=${val}
         fi
 	##################################################
 	read -p "Enter nevents (${nevents}): " val
 	# If the user sent something, grab it
-        if [ ${#val} -gt 1 ] ; then
+        if [ ${#val} -gt 0 ] ; then
 		nevents=${val}
         fi
 	##################################################
