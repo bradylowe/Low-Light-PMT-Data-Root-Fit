@@ -78,8 +78,8 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	lightLevels[1][60] = 14.2;
 	lightLevels[1][70] = 51.6;
 	lightLevels[1][80] = 155.0;
-	lightLevels[1][90] = 383.0;
-	lightLevels[1][100] = 600.0;
+	lightLevels[1][90] = 389.0;
+	lightLevels[1][100] = 770.0;
 	// Setup PMT 2
 	gainLevels[2][0] = 6.1;
 	gainLevels[2][1] = 5.6;
@@ -343,11 +343,14 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 
 	// Decide which PE peaks to consider 
 	int tempMinPE = 1, tempMaxPE = 20;
-	if (mu0 > 10.0) {
+	if (mu0 > 50.0) {
+		tempMinPE = (int)(mu0 - 3.2 * sqrt(mu0));
+		tempMaxPE = (int)(mu0 + 4.4 * sqrt(mu0));
+	} else if (mu0 > 10.0) {
 		tempMinPE = (int)(mu0 - 4.0 * sqrt(mu0));
-		if (tempMinPE < 1) tempMinPE = 1;
 		tempMaxPE = (int)(mu0 + 6.0 * sqrt(mu0));
 	}
+	if (tempMinPE < 1) tempMinPE = 1;
 	const int minPE = tempMinPE;
 	const int maxPE = tempMaxPE;
 
