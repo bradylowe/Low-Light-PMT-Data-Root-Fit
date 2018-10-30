@@ -37,14 +37,14 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	gainLevels[1][8] = 2.5;
 	gainLevels[1][9] = 2.2;
 	gainLevels[1][10] = 1.8;
-	gainLevels[1][11] = 1.1;
-	gainLevels[1][12] = 0.7;
-	gainLevels[1][13] = 0.4;
-	gainLevels[1][14] = 0.3;
-	gainLevels[1][15] = 0.2;
-	gainLevels[1][16] = 0.11;
-	gainLevels[1][17] = 0.07;
-	gainLevels[1][18] = 0.04;
+	gainLevels[1][11] = 1.3;
+	gainLevels[1][12] = 0.93;
+	gainLevels[1][13] = 0.64;
+	gainLevels[1][14] = 0.42;
+	gainLevels[1][15] = 0.25;
+	gainLevels[1][16] = 0.14;
+	gainLevels[1][17] = 0.078;
+	gainLevels[1][18] = 0.039;
 	lightLevels[1][30] = 0.13;
 	lightLevels[1][31] = 0.17;
 	lightLevels[1][32] = 0.191;
@@ -259,12 +259,12 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 
 	// ped - mean of pedestal
 	Double_t ped0 		= getDataPedSig(rootFile, chan, "pedmean");
-	Double_t pedmin 	= off;
-	Double_t pedmax 	= off;
+	Double_t pedmin 	= 220.0;
+	Double_t pedmax 	= 240.0;
 
 	// pedrms - rms of pedestal
 	Double_t pedrms0 	= getDataPedSig(rootFile, chan, "pedrms");
-	Double_t pedrmsmin 	= 0.0;
+	Double_t pedrmsmin 	= 1.0;
 	Double_t pedrmsmax 	= 10.0;
 
 	// alpha - exponential decay rate
@@ -315,7 +315,8 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	// sigrms - rms of signal
 	Double_t sigrms0 	= 1.8;
 	Double_t sigrmsmin 	= 0.0;
-	Double_t sigrmsmax 	= 2.5;
+	//Double_t sigrmsmax 	= 2.5;
+	Double_t sigrmsmax 	= 0.1;
 	// inj - proportion of data that are injected pedestal
 	Double_t inj0 		= 0.5;
 	Double_t injmin		= 0.0;
