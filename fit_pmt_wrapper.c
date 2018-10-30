@@ -260,7 +260,7 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	// ped - mean of pedestal
 	Double_t ped0 		= getDataPedSig(rootFile, chan, "pedmean");
 	Double_t pedmin 	= 220.0;
-	Double_t pedmax 	= 240.0;
+	Double_t pedmax 	= 260.0;
 
 	// pedrms - rms of pedestal
 	Double_t pedrms0 	= getDataPedSig(rootFile, chan, "pedrms");
