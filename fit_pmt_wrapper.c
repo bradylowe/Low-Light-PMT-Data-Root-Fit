@@ -2,7 +2,7 @@
 using namespace std;
 
 // Define filter transmittion vector for use later
-Double_t filterMap[9] = {0.0, 0.001, 0.444, 0.592, 0.201, 0.771, 0.337, 1.0, 0.056};
+Double_t filterMap[9] = {0.0, 0.004, 0.444, 0.592, 0.201, 0.771, 0.337, 1.0, 0.06};
 
 // ADC factor (THERE IS A FACTOR OF 10^6 FLOATING AROUND INVISIBLY HERE)
 Double_t gainToChannels = 160.2 / 25.0; // 160.2 femtoCoulombs per electron / 25.0 femtoCoulombs per channel = 6.408 chan / electron
@@ -79,7 +79,7 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	lightLevels[1][70] = 51.6;
 	lightLevels[1][80] = 155.0;
 	lightLevels[1][90] = 389.0;
-	lightLevels[1][100] = 770.0;
+	lightLevels[1][100] = 764.0;
 	// Setup PMT 2
 	gainLevels[2][0] = 6.1;
 	gainLevels[2][1] = 5.6;
@@ -315,8 +315,9 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	// sigrms - rms of signal
 	Double_t sigrms0 	= 1.8;
 	Double_t sigrmsmin 	= 0.0;
-	//Double_t sigrmsmax 	= 2.5;
-	Double_t sigrmsmax 	= 0.1;
+	Double_t sigrmsmax 	= 2.5;
+	if (hv < 1000) {sigrmsmax = 0.1;}
+	else if (hv < 1400) {sigrmsmax = 0.5;}
 	// inj - proportion of data that are injected pedestal
 	Double_t inj0 		= 0.5;
 	Double_t injmin		= 0.0;

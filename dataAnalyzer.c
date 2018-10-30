@@ -342,8 +342,8 @@ Double_t the_real_deal_yx_bg(Double_t *x, Double_t *par){
 	Double_t gaus_is = exp(-pow(xx - par[1], 2) / 2.0 / pow(par[2], 2)) / par[2] / sqrt(twopi);
   
 	// If we are to the right of the pedestal, include the exponential.
-	//if(xx >= par[1]){
-	if(false){
+	if(xx >= par[1]){
+	//if(false){
 		igne_is = par[3] * exp(-par[3] * (xx - par[1]));
 	} else {
 		igne_is = 0.;
