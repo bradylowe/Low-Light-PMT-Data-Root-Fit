@@ -1,4 +1,4 @@
-#include "fit_pmt.c"
+#include "double_fit_pmt.c"
 using namespace std;
 
 // Define filter transmittion vector for use later
@@ -13,7 +13,7 @@ Double_t channelsToGain = 25.0 / 160.2; // (25 fC / chan) / (160.2 fC / electron
 // All inputs into fit_pmt.c should be implemented in this function. This function should provide full
 // functionality of fit_pmt.c while also allowing the user to diagnose and test values as well as record
 // and keep track of previous fits to data files.
-Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
+Int_t double_fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	///// SET UP HARD-CODED VALUES PERTAINING TO PMTS AND LIGHT SOURCE
@@ -358,11 +358,9 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	const int maxPE = tempMaxPE;
 
 	// Call the function with the appropriate params
-	return fit_pmt(
+	return double_fit_pmt(
 		rootFile, runID, fitID, runNum, daq, chan, pmt, // 7 params
 		dataRate, pedRate, hv, ll, filter,		// 5 params
-		constrainGain, constrainLL, constrainInj, 	// 3 params
-		noExpo,						// 1 param
 		saveResults, saveNN, fitEngine, lowRangeThresh, // 4 params
 		highRangeThresh, minPE, maxPE,			// 3 params
 		w0, ped0, pedrms0, alpha0, mu0, 		// 5 params

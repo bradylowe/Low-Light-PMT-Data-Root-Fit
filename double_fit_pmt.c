@@ -27,8 +27,8 @@
 // Take in a large number of extra parameters to have an algorithm that
 // is callable and fully capable, and yet able to remain hard-coded for
 // a long period of time.
-int fit_pmt(
-	// In gaindb.run_params mysql table
+int double_fit_pmt(
+	// In gaindb (mysql database)
 	string rootFile, 	// File name (something.root)
 	Int_t runID,		// Unique run identifier
 	Int_t fitID, 		// Unique fit identifier
@@ -41,11 +41,7 @@ int fit_pmt(
 	Int_t hv, 		// High voltage used
 	Int_t ll, 		// Light level used (light level 4,60 becomes 46)
 	Int_t filter, 		// Filter used (0 - 8)(0 is closed shutter)
-	// These params can be used to force the function onto solutions.
-	// conGain = 0 means that the fit has 0% wiggle room to deviate from sig0.
-	// conGain = 100 means that it can use the range 0 to  2 * sig0)
-	// conGain = 200 means that it can use the range 0 to  3 * sig0)
-	Int_t conGain, Int_t conLL, Int_t conInj, Int_t noExpo,
+	// These params can be used to force the function onto solutions
 	// These params are some functionality flags
 	Int_t saveResults, 	// Save output png with stats
 	Int_t saveNN, 		// Save neural network output png and txt
@@ -74,8 +70,10 @@ int fit_pmt(
 	printf("\nEntering fit_pmt.c\n");
 
 	// Define constants
-	const Int_t N_FIT_PARAMS = 11;
+	const Int_t N_FIT_PARAMS = 14;
         const Int_t MAX_BIN = 4096;
+	Double_t w_2 = 0.001;
+	Double_t mu_2 = 10.0;
 
 	// Check pe bound setup
 	const int nPE = maxPE - minPE + 1;
@@ -91,9 +89,9 @@ int fit_pmt(
 	// We must pass in MIN and MAX_PE through the parameters to get them into the fit.
 	// We set MIN_PE minimum bound = maximum bound so the parameter is constrained.
 	// We also constrain MAX_PE the same way.
-	Double_t initial[N_FIT_PARAMS] = {w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0, MIN_PE, MAX_PE};
-	Double_t min[N_FIT_PARAMS] = {wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin, MIN_PE, MAX_PE};
-	Double_t max[N_FIT_PARAMS] = {wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax, MIN_PE, MAX_PE};
+	Double_t initial[N_FIT_PARAMS] = {w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0, MIN_PE, MAX_PE, w_2, 2.0 * mu0, sigrms0};
+	Double_t min[N_FIT_PARAMS] = {wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin, MIN_PE, MAX_PE, 0.0, 2.0 * mumin, 0.0};
+	Double_t max[N_FIT_PARAMS] = {wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax, MIN_PE, MAX_PE, 0.1, 2.0 * mumax, 10.0};
 
         // Open .root data file
         printf("Opening file %s\n", rootFile.c_str());
@@ -154,9 +152,8 @@ int fit_pmt(
                 h_QDC->SetBinError(curBin, sqrt(curVal) / sum);
         }
 
-	// Define fitting function
-	TF1 *fit_func=new TF1("fit_func", the_real_deal_yx, 0, MAX_BIN,N_FIT_PARAMS); 
-	
+	// Define DATA fitting function
+	TF1 *fit_func=new TF1("fit_func", double_fit_pmt, 0, MAX_BIN,N_FIT_PARAMS); 
 	fit_func->SetLineColor(4); // Dark blue
 	fit_func->SetNpx(2000);
 	fit_func->SetLineWidth(2);
@@ -172,7 +169,9 @@ int fit_pmt(
 	fit_func->SetParName(8, "real");
 	fit_func->SetParName(9, "MIN_PE");
 	fit_func->SetParName(10, "MAX_PE");
-
+	fit_func->SetParName(11, "norm_2");
+	fit_func->SetParName(12, "mu_2");
+	fit_func->SetParName(13, "S2");
 	// Set initial parameters
 	fit_func->SetParameters(initial);
 
@@ -251,21 +250,35 @@ int fit_pmt(
 
 	// Make signal distribution functions for showing deconvolution in image
 	TF1 *fis_from_fit_pe[nPE];
+	
 	// Make one for each PE contribution considered
 	for ( int bb = minPE; bb < maxPE; bb++) {
 		// Set current PE peak in consideration
-		fit_func->GetParameters(back);
-		back[9] = (double)(bb);
-        	fis_from_fit_pe[bb] = new TF1(Form("pe_fit_%d", bb), the_real_deal_yx_pe, 0, MAX_BIN, N_FIT_PARAMS);
+		back[9] = (double)(bb - minPE + 1); //(bb + minPE - 1)
+        	fis_from_fit_pe[bb] = new TF1(Form("pe_fit_%d", bb), double_fit_pmt_pe, 0, MAX_BIN, N_FIT_PARAMS);
         	fis_from_fit_pe[bb]->SetParameters(back);
         	fis_from_fit_pe[bb]->SetLineStyle(2);
 		fis_from_fit_pe[bb]->SetLineColor(2);
 		fis_from_fit_pe[bb]->SetNpx(2000);
 		fis_from_fit_pe[bb]->Draw("same");
 	}
+	
+	// Make one for each PE contribution considered
+	Int_t minPE2 = (int)(back[12] - 8);
+	if (minPE2 < 1) minPE2 = 1;
+	for ( int bb = minPE2; bb < (int)(back[12] + 8); bb++) {
+		// Set current PE peak in consideration
+		back[9] = (double)(bb - minPE + 1); //(bb + minPE - 1)
+        	fis_from_fit_pe[bb] = new TF1(Form("pe_fit_2_%d", bb), double_fit_pmt_pe2, 0, MAX_BIN, N_FIT_PARAMS);
+        	fis_from_fit_pe[bb]->SetParameters(back);
+        	fis_from_fit_pe[bb]->SetLineStyle(2);
+		fis_from_fit_pe[bb]->SetLineColor(4);
+		fis_from_fit_pe[bb]->SetNpx(2000);
+		fis_from_fit_pe[bb]->Draw("same");
+	}
 
 	// Make background distribution function for printing for user
-	TF1 *fis_from_fit_bg = new TF1("fis_from_fit_bg", the_real_deal_yx_bg, 0, MAX_BIN, N_FIT_PARAMS);
+	TF1 *fis_from_fit_bg = new TF1("fis_from_fit_bg", double_fit_pmt_bg, 0, MAX_BIN, N_FIT_PARAMS);
 	fis_from_fit_bg->SetParameters(back);
         fis_from_fit_bg->SetLineStyle(2);
         fis_from_fit_bg->SetLineColor(7); // Cyan
@@ -312,7 +325,7 @@ int fit_pmt(
 	Double_t gainPercentError = gainError / gain * 100.0;
 
 	// Set title of graph to display gain measurement
-        h_QDC->SetTitle(Form("gain: (%.4f, %.4f, %.1f%%)", gain, gainError, gainPercentError));
+        h_QDC->SetTitle(Form("gain: (%.2f, %.3f, %.1f%%)", gain, gainError, gainPercentError));
 
 	// DEFINE USER IMAGE FILE AND NN IMAGE FILE
 	char humanPNG[256];
@@ -363,17 +376,16 @@ int fit_pmt(
 	ofstream file;
 	char queryLine[2048];
 	sprintf(queryLine, 
-		"run_id='%d',fit_engine='%d',fit_low='%d',fit_high='%d',min_pe='%d',max_pe='%d',w_0='%f',ped_0='%f',ped_rms_0='%f',alpha_0='%f',mu_0='%f',sig_0='%f',sig_rms_0='%f',inj_0='%f',real_0='%f',w_min='%f',ped_min='%f',ped_rms_min='%f',alpha_min='%f',mu_min='%f',sig_min='%f',sig_rms_min='%f',inj_min='%f',real_min='%f',w_max='%f',ped_max='%f',ped_rms_max='%f',alpha_max='%f',mu_max='%f',sig_max='%f',sig_rms_max='%f',inj_max='%f',real_max='%f',w_out='%f',ped_out='%f',ped_rms_out='%f',alpha_out='%f',mu_out='%f',sig_out='%f',sig_rms_out='%f',inj_out='%f',real_out='%f',w_out_error='%f',ped_out_error='%f',ped_rms_out_error='%f',alpha_out_error='%f',mu_out_error='%f',sig_out_error='%f',sig_rms_out_error='%f',inj_out_error='%f',real_out_error='%f',chi='%f',gain='%f',gain_error='%f',gain_percent_error='%f',con_gain='%d', con_ll='%d', con_inj='%d', no_expo='%d'",
+		"run_id='%d',fit_engine='%d',fit_low='%d',fit_high='%d',min_pe='%d',max_pe='%d',w_0='%f',ped_0='%f',ped_rms_0='%f',alpha_0='%f',mu_0='%f',sig_0='%f',sig_rms_0='%f',inj_0='%f',real_0='%f',w_min='%f',ped_min='%f',ped_rms_min='%f',alpha_min='%f',mu_min='%f',sig_min='%f',sig_rms_min='%f',inj_min='%f',real_min='%f',w_max='%f',ped_max='%f',ped_rms_max='%f',alpha_max='%f',mu_max='%f',sig_max='%f',sig_rms_max='%f',inj_max='%f',real_max='%f',w_out='%f',ped_out='%f',ped_rms_out='%f',alpha_out='%f',mu_out='%f',sig_out='%f',sig_rms_out='%f',inj_out='%f',real_out='%f',w_out_error='%f',ped_out_error='%f',ped_rms_out_error='%f',alpha_out_error='%f',mu_out_error='%f',sig_out_error='%f',sig_rms_out_error='%f',inj_out_error='%f',real_out_error='%f',chi='%f',gain='%f',gain_error='%f',gain_percent_error='%f'",
 		runID, fitEngine, lowRangeThresh, highRangeThresh, minPE, maxPE,
 		w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0,
         	wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin,
         	wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax,
         	wout, pedout, pedrmsout, alphaout, muout, sigout, sigrmsout, injout, realout,
         	wouterr, pedouterr, pedrmsouterr, alphaouterr, muouterr, sigouterr, sigrmsouterr, injouterr, realouterr,
-        	chi/double(ndf), gain, gainError, gainPercentError,
-		conGain, conLL, conInj, noExpo,
+        	chi/double(ndf), gain, gainError, gainPercentError
 	);
-	file.open("sql_output.txt", std::ofstream::out);
+	//file.open("sql_output.txt", std::ofstream::out);
 	if (file.is_open()) {
 		file << queryLine << endl;
 		file.close();

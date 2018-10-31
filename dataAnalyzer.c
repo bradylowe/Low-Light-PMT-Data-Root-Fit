@@ -374,3 +374,63 @@ Double_t the_real_deal_yx(Double_t *x, Double_t *par){
 	Double_t s_bg = the_real_deal_yx_bg(x, par);
 	return s_real_sum + s_bg;
 }
+
+// This function assumes that there is a certain likelihood of a double-PE 
+// ejection for a single photon (motivated by studying many fits).
+Double_t double_fit_pmt_bg(Double_t *x, Double_t *par) {
+        // Get param vector for the_real_deal_yx_pe
+        Double_t par2[11] = {   par[0], par[1], par[2], par[3], par[4],
+                                par[5], par[6], par[7], par[8], par[9], par[10] };
+        // Return total
+        return the_real_deal_yx_bg(x, par2);
+}
+
+// This function assumes that there is a non-zero probability
+// of experiencing a different light level than provided (cosmic ray)
+Double_t double_fit_pmt_pe(Double_t *x, Double_t *par) {
+        // Get param vector for the_real_deal_yx_pe
+        Double_t par2[11] = {   par[0], par[1], par[2], par[3], par[4],
+                                par[5], par[6], par[7], par[8], par[9], par[10] };
+        return (1.0 - par[11]) * the_real_deal_yx_pe(x, par2);
+}
+
+// This function computes the PE contribution from the extra light source
+Double_t double_fit_pmt_pe2(Double_t *x, Double_t *par) {
+        // Get param vector for the_real_deal_yx_pe
+        Double_t par2[11] = {   par[0], par[1], par[2], par[3], par[12],
+                                par[5], par[13], par[7], par[8], par[9], par[10] };
+        return par[11] * the_real_deal_yx_pe(x, par2);
+}
+
+// par[0] = w
+// par[1] = q           // par[2] = s0          // par[3] = alpha
+// par[4] = mu          // par[5] = q1          // par[6] = s1
+// par[7] = inj         // par[8] = real        // par[9] = min_pe
+// par[10] = max_pe     // par[11] = norm2      // par[12] = mu2
+// par[13] = s2 (possible different gaussian width from different amplification process)
+Double_t double_fit_pmt(Double_t *x, Double_t *par) {
+        // Initialize sum  
+        Double_t s_real_sum = 0.;
+        // Store this for later
+        Double_t initial_par9 = par[9];
+        // Loop through all PE contributions for normal distribution
+        for (int i = (int)(par[9]); i < (int)(par[10]); i++) {
+                par[9] = (double)(i); // Select current PE 
+                s_real_sum += double_fit_pmt_pe(x, par);
+        }
+        // Compute minPE to consider
+        Int_t minPE = (int)(par[12] - 8);
+        if (minPE < 1) minPE = 1;
+        Int_t maxPE = (int)(par[12] + 8);
+        // Loop over all relavent PE contributions for EXTRA distribution
+        for (int i = minPE; i < maxPE; i++) {
+                par[9] = (double)(i); // Select current PE 
+                s_real_sum += double_fit_pmt_pe2(x, par);
+        }
+        // Set parameter back to real value
+        par[9] = initial_par9;
+        // Compute background and return total
+        Double_t s_bg = double_fit_pmt_bg(x, par);
+        return s_real_sum + s_bg;
+}
+
