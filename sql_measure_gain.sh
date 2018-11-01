@@ -10,8 +10,8 @@ if [ $# -eq 0 ] ; then
 elif [ $# -eq 1 ] ; then
 	fit_cond="$1 AND ${defaults}"
 else
-	run_cond=$2
-	fit_cond="$1 AND ${defaults}"
+	run_cond=$1
+	fit_cond="$2 AND ${defaults}"
 fi
 
 

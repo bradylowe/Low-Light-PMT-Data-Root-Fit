@@ -50,7 +50,7 @@ for rootfile in ${selected_files} ; do
 	adc="v965ST"
 	chan="12"
 	gate="100"
-	pmt=2
+	pmt=4
 	base=1
 	iped=40
 	hv=2000
