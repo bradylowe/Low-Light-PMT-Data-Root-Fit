@@ -2,7 +2,9 @@
 im_dir="$(grep im_dir setup.txt | awk -F'=' '{print $2}')"
 
 # Look at input parameters
-if [ $# -eq 1 ] ; then
+if [ $# -eq 0 ] ; then
+	fit_cond="TRUE"
+elif [ $# -eq 1 ] ; then
 	fit_cond=$1
 else
 	run_cond=$1

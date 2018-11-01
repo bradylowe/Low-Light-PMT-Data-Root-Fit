@@ -59,6 +59,9 @@ for item in $* ; do
 	# Get rid of exponential
 	elif [[ ${name} == "noExpo" ]] ; then
 		noExpo=${val}
+	# No exponential decay on pedestal
+	elif [[ ${name} == "noExpoPed" ]] ; then
+		noExpoPed=${val}
 	# Root Filename (if null, all will be used)
 	elif [[ ${name} == "rootFile" ]] ; then
 		rootFile=${val}
@@ -221,8 +224,12 @@ for cur_id in ${run_list} ; do
 	# Query the database to store all output info from this fit
 	if [ -f ${sqlfile} -a ${noSQL} -eq 0 ] ; then
 		# Move the images to the storage directories
-		mv ${bothpng} ${im_dir}/png_fit/.
-		mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/.
+		if [ ${savePNG} -gt 0 ] ; then
+			mv fit_pmt__*.png ${im_dir}/png_fit/.
+		fi
+		if [ ${saveNN} -gt 0 ] ; then
+			mv fit_pmt_nn__*.png ${im_dir}/png_fit_nn/.
+		fi
 		# Initialize the update query
 		query="USE gaindb; UPDATE fit_results SET $(head -n 1 ${sqlfile})"
 		# If we are saving png output, update database with absolute file path
@@ -243,6 +250,12 @@ for cur_id in ${run_list} ; do
 		else
 			mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; DELETE FROM fit_results WHERE fit_id=${fitID};"
 		fi
+
+		# If no exponential on ped, set label=10 as a hack
+		if [ ${#noExpoPed} -gt 0 ] ; then
+			mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; UPDATE fit_results SET label=10 WHERE fit_id=${fitID};"
+		fi
+		
 	fi
 
 	# Make sure to break from loop if only one run_id
