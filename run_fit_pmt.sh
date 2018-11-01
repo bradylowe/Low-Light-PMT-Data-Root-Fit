@@ -86,6 +86,9 @@ for item in $* ; do
 	# Display images through eog when finished
 	elif [[ ${name} == "showImages" ]] ; then
 		showImages=${val}
+	# Can turn off storing in mysql database
+	elif [[ ${name} == "noSQL" ]] ; then
+		noSQL=${val}
 	fi	
 done
 
@@ -130,6 +133,10 @@ fi
 if [ ${#noExpo} -eq 0 ] ; then
 	noExpo=0
 fi
+# Init noSQL to false
+if [ ${#noSQL} -eq 0 ] ; then
+	noSQL=0
+fi
 # Check for filename and grab corresponding run_id
 if [ ${#rootFile} -gt 0 -a ${#run_id} -eq 0 ] ; then
 	run_id=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT run_id FROM run_params WHERE rootfile = '${rootfile}';")
@@ -168,8 +175,12 @@ for cur_id in ${run_list} ; do
 	set -- ${allitems}
 
 	# Insert a new row in the fit_results table and grab the fit_id
-	mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; INSERT INTO fit_results (run_id) VALUES(${cur_id});"
-	fitID=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT fit_id FROM fit_results WHERE run_id=${cur_id} ORDER BY fit_id DESC LIMIT 1;")
+	if [ ${noSQL} -eq 0 ] ; then
+		mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; INSERT INTO fit_results (run_id) VALUES(${cur_id});"
+		fitID=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT fit_id FROM fit_results WHERE run_id=${cur_id} ORDER BY fit_id DESC LIMIT 1;")
+	else
+		fitID=0
+	fi
 
 	# If user sent in single run_id, DONT DO BATCH MODE
 	if [ ${#run_id} -eq 0 ] ; then
@@ -194,8 +205,7 @@ for cur_id in ${run_list} ; do
 		bothpng=$(echo ${png} | sed 's/log0/logX/g')
 		# Create the montage
 		montage -label "%f" -frame 5 -geometry 500x400+1+1 ${png} ${logpng} ${bothpng}
-		# Move the images to the appropriate directories
-		mv ${bothpng} ${im_dir}/png_fit/.
+		# Delete single images, keep montage of both images
 		created_pngs="${created_pngs} ${im_dir}/png_fit/${bothpng}"
 		rm ${png} ${logpng}
 	fi
@@ -206,11 +216,13 @@ for cur_id in ${run_list} ; do
 	if [ ${saveNN} -eq 1 ] ; then
 		nnpng=$(ls fit_pmt_nn__fitID${fitID}_runID${1}_*log0.png)
 		nnlogpng=$(echo ${nnpng} | sed 's/log0/log1/g')
-		mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/.
 	fi
 
 	# Query the database to store all output info from this fit
-	if [ -f ${sqlfile} ] ; then
+	if [ -f ${sqlfile} -a ${noSQL} -eq 0 ] ; then
+		# Move the images to the storage directories
+		mv ${bothpng} ${im_dir}/png_fit/.
+		mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/.
 		# Initialize the update query
 		query="USE gaindb; UPDATE fit_results SET $(head -n 1 ${sqlfile})"
 		# If we are saving png output, update database with absolute file path

@@ -15,9 +15,9 @@
 ####################################################################
 
 old_dir=$(pwd)
-cd /media/data/Projects/fit_pmt/data
-selected_files=$(ls daq3/r*.root)
-selected_files="${selected_files} $(ls daq5/r*.root)"
+cd /home/daq/data/raw/V965ST
+selected_files=$(ls daq3/r28*.root)
+#selected_files="${selected_files} $(ls daq5/r*.root)"
 
 # SET INPUT VALUE FOR ALL SELECTED RUNS
 for rootfile in ${selected_files} ; do
@@ -32,40 +32,25 @@ for rootfile in ${selected_files} ; do
 	# Make datafile name from rootfile name
 	datafile="${rootfile%.root}.dat"
 
-	# Initialize values that might be read from the filename
-	adc="v965ST"
+	# Grab daq from which daq folder the run is in
 	daq=$(echo ${rootfile} | awk -F'/' '{print $1}')
+	# Remove the letters "daq"
 	daq=${daq:3}
-
 	# Remove leading 'daq?/r' and '.root'
 	run_num=${rootfile:6}
 	run_num=${run_num%.root}
-	# Filename is of style r123_v965ST_5.root
-	if [ $(echo ${run_num} | grep v965ST) ] ; then	
-		# Grab the run number
-		run_num=$(echo ${run_num} | awk -F'_' '{print $1}')
-		# Grab the adc value
-		adc=$(echo ${rootfile} | awk -F'_' '{print $2}')
-		# Grab the daq value
-		daq=$(echo ${rootfile} | awk -F'_' '{print $3}')
-		daq=$(echo ${daq} | awk -F'.' '{print $1}') 
-	# Filename is of style r123_5.root 
-	elif echo ${run_num} | grep _ ; then
-		# Grab the run number
-		run_num=$(echo ${run_num} | awk -F'.' '{print $1}')
-		# Grab the daq value
-		daq=$(echo ${rootfile} | awk -F'_' '{print $2}')
-		daq=$(echo ${daq} | awk -F'.' '{print $1}') 
-	# Filename is of style r123.dat
-	else
-		# Grab the run number
-		run_num=$(echo ${run_num} | awk -F'.' '{print $1}')
+	run_num=${run_num%_*}
+
+	# Skip all files with run_num less than 2500
+	if [ ${run_num} -lt 2500 ] ; then
+		continue
 	fi
 
 	# Initialize values to common defaults
+	adc="v965ST"
 	chan="12"
 	gate="100"
-	pmt=1
+	pmt=2
 	base=1
 	iped=40
 	hv=2000
@@ -80,6 +65,10 @@ for rootfile in ${selected_files} ; do
 	echo "---------------------------------"
 	##################################################
 	read -p "Enter hv (${hv}): " val
+	# Skip this run if user desires
+	if [[ ${val} == "skip" ]] ; then
+		continue
+	fi
 	# If the user sent something, grab it
         if [ ${#val} -gt 0 ] ; then
 		hv=${val}
