@@ -7,7 +7,8 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - MySQL for database use (found [here](https://dev.mysql.com/doc/refman/8.0/en/installing.html))
 
 *Quick start:*
- - First, run ./sql_select_runs.sh "hv=2000 AND pmt=1"
+ - First, open setup.txt and set the correct values for directories
+ - Next, run ./sql_select_runs.sh "hv=2000 AND pmt=1"
  - Then, run ./run_fit_pmt.sh
  - To view the results of what you just ran (up to 20 fits), execute:
     * mysql -u user -p -e "USE gaindb; SELECT fit_id, gain, chi FROM fit_results ORDER BY fit_id DESC LIMIT 20;"
@@ -17,6 +18,11 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ---
 
 ## Description of files and directories
+
+### *setup.txt*
+ - This text file is for portability to different machines.
+ - In this file, we can set different global variables such as the location of images or data on this computer.
+ - This allows us to store the data and images anywhere (which can take up a lot of space sometimes).
 
 ### *fit_pmt.c* 
  - This Root macro defines a 9-parameter mathematical model of a PMT response.
