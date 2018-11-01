@@ -1,0 +1,2 @@
+data_dir=/home/daq/data/raw/V965ST
+im_dir=.
