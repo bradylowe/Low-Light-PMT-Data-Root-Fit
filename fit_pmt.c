@@ -371,7 +371,7 @@ int fit_pmt(
         	wout, pedout, pedrmsout, alphaout, muout, sigout, sigrmsout, injout, realout,
         	wouterr, pedouterr, pedrmsouterr, alphaouterr, muouterr, sigouterr, sigrmsouterr, injouterr, realouterr,
         	chi/double(ndf), gain, gainError, gainPercentError,
-		conGain, conLL, conInj, noExpo,
+		conGain, conLL, conInj, noExpo
 	);
 	file.open("sql_output.txt", std::ofstream::out);
 	if (file.is_open()) {
