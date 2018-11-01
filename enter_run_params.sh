@@ -15,7 +15,7 @@
 ####################################################################
 
 old_dir=$(pwd)
-cd /home/daq/data/raw/V965ST
+cd $(grep data_dir setup.txt | awk -F'=' '{print $2}')
 selected_files=$(ls daq3/r28*.root)
 #selected_files="${selected_files} $(ls daq5/r*.root)"
 

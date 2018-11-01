@@ -17,10 +17,10 @@
 sqlfile="sql_output.txt"
 
 # This is where images are stored
-im_dir="/media/data/Projects/fit_pmt/images"
+data_dir=$(grep data_dir setup.txt | awk -F'=' '{print $2}')
+im_dir=$(grep im_dir setup.txt | awk -F'=' '{print $2}')
 
 # This is where data is stored
-data_dir="/media/data/Projects/fit_pmt/data"
 
 
 #######################################################

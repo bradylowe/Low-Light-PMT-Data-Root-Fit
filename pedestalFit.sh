@@ -1,5 +1,5 @@
 
-data_dir="/media/data/Projects/fit_pmt/data"
+data_dir=$(grep data_dir setup.txt | awk -F'=' '{print $2}')
 runs=$(head selected_runs.txt)
 
 if [ $# -eq 1 ] ; then

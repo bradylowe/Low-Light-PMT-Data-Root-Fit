@@ -1,5 +1,5 @@
 # PNG location
-im_dir="/media/data/Projects/fit_pmt/images/png_fit/"
+im_dir="$(grep im_dir setup.txt | awk -F'=' '{print $2}')/"
 
 # Grab input from user or file
 if [ $# -eq 1 ] ; then

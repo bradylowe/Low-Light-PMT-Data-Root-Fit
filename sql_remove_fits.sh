@@ -1,5 +1,5 @@
 
-im_dir="/media/data/Projects/fit_pmt/images"
+im_dir="$(grep im_dir setup.txt | awk -F'=' '{print $2}')"
 
 # Look at input parameters
 if [ $# -eq 1 ] ; then

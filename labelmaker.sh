@@ -1,6 +1,6 @@
 
 # PNG location
-im_dir="/media/data/Projects/fit_pmt/images/png_fit/"
+im_dir="$(grep im_dir setup.txt | awk -F'=' '{print $2}')/"
 
 # Get list of png filenames
 query="USE gaindb; SELECT human_png FROM fit_results WHERE nn_png IS NOT NULL AND label IS NULL ORDER BY fit_id;"
