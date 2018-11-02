@@ -99,6 +99,7 @@ done
 # Check all necessary input values, initialize if needed
 # Correct errors
 ##########################################################
+noExpoPed=1
 
 # Initialize no gain constrain
 if [ ${#conGain} -eq 0 ] ; then
