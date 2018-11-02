@@ -1,4 +1,4 @@
 
-./run_fit_pmt.sh 
-./run_fit_pmt.sh noExpo=1
+./run_fit_pmt.sh noExpo=1 conGain=20
+./run_fit_pmt.sh fitEngine=1 conGain=20
 
