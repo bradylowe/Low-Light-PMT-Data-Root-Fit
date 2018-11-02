@@ -60,9 +60,28 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - After the root macro has performed the fit and saved its output pngs and SQL query textfile, this script may use the png in creating a montage, then it will put the png in its correct directory or delete it, and then the script will grab the SQL query from the text file and submit it to save the fit output to the gaindb database.
  - Example usage: ./run_fit_pmt.sh fitEngine=1 printSum=true ll=47 conGain=90 savePNG=true pngFile="nice_montage.png" runs="17 29 49 50 51"
 
+### *fit_high_light.c*
+ - This macro assumes a gaussian pedestal and a gaus+exp tail.
+ - This macro returns the separation between the two distribution means.
+
+### *run_fit_high_light.sh*
+ - This script executes the high light fit macro on all selected_runs.txt.
+ - It takes an optional parameter of scale=1 which switches fit to high-range scale.
+ - The results of the fit are written to ped_results.txt
+
+### *pedestalfit.c*
+ - This macro assumes a sum of three gaussians as the distribution.
+
+### *run_fit_pedestal.sh*
+ - This script fits selected_runs.txt to the pedestal fit.
+
 ### *run_batch.sh*
  -  This script is simply executed as ./run_batch.sh (no input arguments)
  -  This script runs the run_fit_pmt.sh script on a predefined list of run_id's with predefined input arguments. This is a way to make many different fits to many different data runs at once.
+
+---
+---
+---
 
 ### *sql_select_runs.sh*
  - This script takes in a string as inputs that is used in mysql query to run_params table.
@@ -72,6 +91,35 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This script is just like the above except it takes in two query strings and outputs fit_ids instead of run_ids.
  - The first input string is a query to run_params. The second queries fit_results.
  - If only one parameter is sent in, it is used to query fit_results table.
+
+### *sql_remove_fits.sh*
+ - This script removes all the fits in selected_fits.txt
+ - The row is removed from the SQL table.
+ - Any associated images are deleted from file.
+
+### *sql_view_fits.sh*
+ - This script opens eog file viewer with all filenames corresponding to selected_fits.txt
+
+### *sql_average.sh*
+ - This script takes in an argument which is a column in the fit_results table.
+ - The script finds the average and standard dev of the column for the runs in selected_runs.txt.
+
+### *sql_ave_errors.sh*
+ - This script is just like the above, but it also grabs the errors column and returns it.
+
+### *sql_make_plot.sh*
+ - This script executes make_plot.c after grabbing values corresponding to selected_fits.txt
+ - This script takes 2 parameters
+    * x - independent variable
+    * y - dependent variable
+ - The two parameters can be any numeric column value from either the run_params table OR the fit_results table. For a list of possibilities, execute:
+    * ./make_plot.sh help
+ - Example usage:
+    * ./make_plot.sh hv gain 
+
+---
+---
+---
 
 ### *histograms:*
  - This directory houses a collection of text files with numbers in them.
@@ -105,19 +153,6 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This script needs sql_select_runs.sh to be ran before so that selected_runs.txt exists.
  - This script executes a fit to the V965 pedestal (zero signal) events defined in pedestalFit.c.
  - This script will execute one fit at a time and wait for you to exit to show the next run.
-
-### *make_plot.sh*
- - This script executes make_plot.c after doing some things with mysql database
- - This script needs 4 parameters to operate very well:
-    * First parameter tells what to plot as independent variable
-    * Second parameter decides the dependent variable
-    * Third parameter selects which runs to consider from run_params table
-    * Fourth parameter selects which fits to consider from fit_results table
- - The first two parameters can be any numeric column value from either the run_params table OR the fit_results table. For a list of possibilities, execute:
-    * ./make_plot.sh help
- - Example usage:
-    * ./make_plot.sh hv gain "hv>1400 AND pmt=1 AND ll>30 AND ll<65"  "chi < 2 AND gain > 0"
-    * ./make_gain_curve.sh is a shortcut when the first two parameters are "hv" and "gain"
 
 ### *labelmaker.sh*
  - This script allows us to label the fits as either good or bad.

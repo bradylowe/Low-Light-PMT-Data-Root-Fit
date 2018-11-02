@@ -26,36 +26,21 @@ fi
 if [ ${#1} -gt 0 ] ; then
 	x=$1
 else
-	echo Error
-	exit
+	x="hv"
 fi
 
 # Grab dependent var
 if [ ${#2} -gt 0 ] ; then
 	y=$2
 else
-	echo Error
-	exit
+	y="gain"
 fi
 
 # Get list of fit ID's
-if [ ${#3} -gt 0 ] ; then
-	run_cond=$3
-fi
-if [ ${#4} -gt 0 ] ; then
-	fit_cond=$4
-fi
-./sql_select_fits.sh "${run_cond}" "${fit_cond}"
 fits=$(head -n 1 selected_fits.txt)
 
-# Delete all info in array files
-if [ ${#5} -gt 0 ] ; then
-	rm x_file_$5.txt ; touch x_file_$5.txt
-	rm y_file_$5.txt ; touch y_file_$5.txt
-else
-	rm x_file.txt ; touch x_file.txt
-	rm y_file.txt ; touch y_file.txt
-fi
+rm x_file.txt ; touch x_file.txt
+rm y_file.txt ; touch y_file.txt
 
 # Loop through each for sql query
 for fitID in ${fits} ; do
@@ -87,13 +72,8 @@ for fitID in ${fits} ; do
 	# Send values to file
 	for val in ${y_out} ; do
 		if [ ${#val} -gt 0 -a ${#x_out} -gt 0 ] ; then
-			if [ ${#5} -gt 0 ] ; then
-				echo ${x_out} >> x_file_$5.txt
-				echo ${val} >> y_file_$5.txt
-			else
-				echo ${x_out} >> x_file.txt
-				echo ${val} >> y_file.txt
-			fi
+			echo ${x_out} >> x_file.txt
+			echo ${val} >> y_file.txt
 		fi
 	done
 done

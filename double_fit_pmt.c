@@ -91,7 +91,7 @@ int double_fit_pmt(
 	// We also constrain MAX_PE the same way.
 	Double_t initial[N_FIT_PARAMS] = {w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0, MIN_PE, MAX_PE, w_2, 2.0 * mu0, sigrms0};
 	Double_t min[N_FIT_PARAMS] = {wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin, MIN_PE, MAX_PE, 0.0, 2.0 * mumin, 0.0};
-	Double_t max[N_FIT_PARAMS] = {wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax, MIN_PE, MAX_PE, 0.1, 2.0 * mumax, 10.0};
+	Double_t max[N_FIT_PARAMS] = {wmax, pedmax, pedrmsmax, alphamax, mumax, sigmax, sigrmsmax, injmax, realmax, MIN_PE, MAX_PE, 0.1, 2.0 * mumax, 20.0};
 
         // Open .root data file
         printf("Opening file %s\n", rootFile.c_str());
