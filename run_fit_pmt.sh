@@ -59,9 +59,6 @@ for item in $* ; do
 	# Get rid of exponential
 	elif [[ ${name} == "noExpo" ]] ; then
 		noExpo=${val}
-	# No exponential decay on pedestal
-	elif [[ ${name} == "noExpoPed" ]] ; then
-		noExpoPed=${val}
 	# Root Filename (if null, all will be used)
 	elif [[ ${name} == "rootFile" ]] ; then
 		rootFile=${val}
@@ -92,6 +89,9 @@ for item in $* ; do
 	# Can turn off storing in mysql database
 	elif [[ ${name} == "noSQL" ]] ; then
 		noSQL=${val}
+	# Set label at fit time
+	elif [[ ${name} == "label" ]] ; then
+		label=${val}
 	fi	
 done
 
@@ -252,8 +252,8 @@ for cur_id in ${run_list} ; do
 		fi
 
 		# If no exponential on ped, set label=10 as a hack
-		if [ ${#noExpoPed} -gt 0 ] ; then
-			mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; UPDATE fit_results SET label=10 WHERE fit_id=${fitID};"
+		if [ ${#label} -gt 0 ] ; then
+			mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; UPDATE fit_results SET label=${label} WHERE fit_id=${fitID};"
 		fi
 		
 	fi

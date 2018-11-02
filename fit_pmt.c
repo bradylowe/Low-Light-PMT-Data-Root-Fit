@@ -303,8 +303,8 @@ int fit_pmt(
 	Double_t realouterr = fit_func->GetParError(8);
 
 	// CALCULATE PMT GAIN USING AMPLIFICATION SETTING AND ADC CONVERSION FACTOR
-	Double_t gain = sigout * 25.0 / 160.2;
-	Double_t gainError = sigouterr * 25.0 / 160.2;
+	Double_t gain = sigout * 25.0 / 160.217662;
+	Double_t gainError = sigouterr * 25.0 / 160.217662;
 	Double_t chiPerNDF = (double)(chi / ndf);
 	if (chiPerNDF > 1.0) {
 		gainError = gainError * sqrt(chiPerNDF);

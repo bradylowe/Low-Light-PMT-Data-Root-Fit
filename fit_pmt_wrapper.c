@@ -76,11 +76,11 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	lightLevels[1][57] = 9.7;
 	lightLevels[1][58] = 10.81;
 	lightLevels[1][59] = 11.47;
-	lightLevels[1][60] = 14.2;
-	lightLevels[1][70] = 51.6;
-	lightLevels[1][80] = 155.0;
-	lightLevels[1][90] = 389.0;
-	lightLevels[1][100] = 764.0;
+	lightLevels[1][60] = 15.23;
+	lightLevels[1][70] = 50.5;
+	lightLevels[1][80] = 150.0;
+	lightLevels[1][90] = 383.0;
+	lightLevels[1][100] = 768.0;
 	// Setup PMT 2
 	gainLevels[2][0] = 4.75;
 	gainLevels[2][1] = 4.50;
@@ -122,7 +122,7 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	lightLevels[2][47] = 1.931;
 	lightLevels[2][48] = 2.219;
 	lightLevels[2][49] = 2.626;
-	lightLevels[2][50] = 2.75;
+	lightLevels[2][50] = 2.92;
 	lightLevels[2][51] = 3.5;
 	lightLevels[2][52] = 4.066;
 	lightLevels[2][53] = 0.64;
@@ -132,10 +132,10 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	lightLevels[2][57] = 0.64;
 	lightLevels[2][58] = 10.29;
 	lightLevels[2][59] = 11.47;
-	lightLevels[2][60] = 14.61;
-	lightLevels[2][70] = 65.0;
-	lightLevels[2][80] = 200.0;
-	lightLevels[2][90] = 389.0;
+	lightLevels[2][60] = 12.61;
+	lightLevels[2][70] = 48.0;
+	lightLevels[2][80] = 196.0;
+	lightLevels[2][90] = 359.0;
 	lightLevels[2][100] = 764.0;
 	// Setup PMT 3
 	gainLevels[3][0] = 5.95;

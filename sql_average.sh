@@ -1,10 +1,10 @@
 
 # Get column from command line
 if [ $# -eq 0 ] ; then
-	echo choose a column
-	exit
+	column="gain"
+else
+	column=$1
 fi
-column=$1
 
 # Grab selected fits and put commas in there
 list=$(head selected_fits.txt | sed "s/ /,/g")
