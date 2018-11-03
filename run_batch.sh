@@ -3,7 +3,7 @@
 iped=80
 iped=40
 # Select ONLY recent runs that are non-pedestal with enough statistics
-default="iped=${iped} AND nevents>=500000 AND datarate>=3000 AND ll>0 AND filter=7"
+default="iped=${iped} AND gate=100 AND nevents>=500000 AND datarate>=3000 AND ll>0 AND filter=7"
 
 
 # Select the low light, high gain runs
@@ -37,7 +37,7 @@ default="iped=${iped} AND nevents>=500000 AND datarate>=3000 AND ll>0 AND filter
 # Now run the filter data.
 # Filter 8 has high light at ll=100
 # Filter 1 has low light at ll=100
-default="iped=40 AND nevents>=500000 AND datarate>=3000 AND ll>0"
+default="iped=40 AND gate=100 AND nevents>=500000 AND datarate>=3000 AND ll>0"
 
 # Filter 8
 ./sql_select_runs.sh "filter=8 AND ll=100 AND ${default}"

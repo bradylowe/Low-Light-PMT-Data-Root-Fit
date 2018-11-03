@@ -16,7 +16,7 @@
 
 old_dir=$(pwd)
 cd $(grep data_dir setup.txt | awk -F'=' '{print $2}')
-selected_files=$(ls daq3/r28*.root)
+selected_files=$(ls daq3/r3*.root)
 #selected_files="${selected_files} $(ls daq5/r*.root)"
 
 # SET INPUT VALUE FOR ALL SELECTED RUNS
@@ -50,7 +50,7 @@ for rootfile in ${selected_files} ; do
 	adc="v965ST"
 	chan="12"
 	gate="100"
-	pmt=4
+	pmt=3
 	base=1
 	iped=40
 	hv=2000
