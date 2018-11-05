@@ -312,7 +312,7 @@ int fit_pmt(
 	Double_t gainPercentError = gainError / gain * 100.0;
 
 	// Set title of graph to display gain measurement
-        h_QDC->SetTitle(Form("gain: (%.4f, %.4f, %.1f%%)", gain, gainError, gainPercentError));
+        h_QDC->SetTitle(Form("gain (%dV): (%.4f, %.4f, %.1f%%)", hv, gain, gainError, gainPercentError));
 
 	// DEFINE USER IMAGE FILE AND NN IMAGE FILE
 	char humanPNG[256];
