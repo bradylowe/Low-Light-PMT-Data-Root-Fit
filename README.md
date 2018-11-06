@@ -8,7 +8,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 *Quick start:*
  - First, open setup.txt and set the correct values for directories
- - Next, run ./sql_select_runs.sh "hv=2000 AND pmt=1"
+ - Next, run ./sql_select_runs.sh run_cond="hv=2000 AND pmt=1"
  - Then, run ./run_fit_pmt.sh
  - To view the results of what you just ran (up to 20 fits), execute:
     * mysql -u user -p -e "USE gaindb; SELECT fit_id, gain, chi FROM fit_results ORDER BY fit_id DESC LIMIT 20;"
@@ -76,8 +76,8 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This script fits selected_runs.txt to the pedestal fit.
 
 ### *run_batch.sh*
- -  This script is simply executed as ./run_batch.sh (no input arguments)
- -  This script runs the run_fit_pmt.sh script on a predefined list of run_id's with predefined input arguments. This is a way to make many different fits to many different data runs at once.
+ -  This script runs the run_fit_pmt.sh script on a predefined list of run_id's with predefined input arguments. 
+ - This is a way to systematically analyze new data sets.
 
 ---
 ---
