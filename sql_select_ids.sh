@@ -41,6 +41,7 @@ done
 # If no condition is sent in, grab all the runs available
 if [ ${#run_cond} -eq 0 ] ; then
 	run_cond="TRUE"
+fi
 if [ ${#fit_cond} -eq 0 ] ; then
 	fit_cond="TRUE"
 fi
@@ -54,7 +55,7 @@ fi
 if [ ${#recent} -gt 0 ] ; then
 	run_cond="${run_cond} AND iped=40 AND gate=100 AND datarate=3500"
 fi
-# Set the sql table and output filename according to id type
+# Set the output filename and table name according to id type
 if [[ ${id} == "run_id" ]] ; then
 	table="run_params"
 	outfile="selected_runs.txt"
@@ -66,36 +67,30 @@ fi
 
 ############################# Query database, write results to output file
 
-# If the user just sent in a fit condition, just use it
-if [[ ${run_cond} == "TRUE" ]] ; then
+if [[ ${id} == "run_id" ]] ; then
 	# Create the query from condition
-	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${fit_cond};"
+	query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Count the selected runs
-	query="USE gaindb; SELECT COUNT(${id}) FROM ${table} WHERE ${fit_cond};"
+	query="USE gaindb; SELECT COUNT(run_id) FROM run_params WHERE ${run_cond};"
 	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-# If the user just sent in a run condition, just use it
-elif [[ ${fit_cond} == "TRUE" ]] ; then
-	# Create the query from condition
-	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${run_cond};"
-	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	# Count the selected runs
-	query="USE gaindb; SELECT COUNT(${id}) FROM ${table} WHERE ${run_cond};"
-	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-# If the user sent in both a run and a fit condition, use both
 else
-	# If the user sent in both fit and run conditions, use both
 	# Create the query from condition
-	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${run_cond};"
+	query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${id} IN (${ret}) AND ${fit_cond};"
+	# Make result comma-separated list
+	list=$(echo ${ret} | sed "s/\n/ /g" | sed "s/ /,/g")
+	query="USE gaindb; SELECT fit_id FROM fit_results WHERE run_id IN (${list}) AND ${fit_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Count the selected runs
-	query="USE gaindb; SELECT COUNT(${id}) FROM ${table} WHERE ${id} IN (${ret});"
+	query="USE gaindb; SELECT COUNT(fit_id) FROM fit_results WHERE run_id IN (${list}) AND ${fit_cond};"
 	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 fi
 
+# Make result space-separated list
+list=$(echo ${ret} | sed "s/\n/ /g")
+
 # Write the runs to file and report to user
-echo ${ret} > ${outfile}
+echo ${list} > ${outfile}
 echo "${count} ${id}s selected"
 
