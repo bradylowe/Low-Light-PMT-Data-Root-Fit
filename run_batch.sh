@@ -13,8 +13,6 @@ for item in $* ; do
 		hllv=${val}
 	elif [[ ${name} == "lllv" ]] ; then
 		lllv=${val}
-	elif [[ ${name} == "filters" ]] ; then
-		filters=${val}
 	elif [[ ${name} == "iped" ]] ; then
 		iped=${val}
 	fi
@@ -36,9 +34,6 @@ fi
 if [ ${#lllv} -eq 0 ] ; then
 	lllv=0
 fi
-if [ ${#filters} -eq 0 ] ; then
-	filters=1
-fi
 if [ ${#iped} -eq 0 ] ; then
 	iped=40
 fi
@@ -46,15 +41,14 @@ fi
 
 # Run all the different fits for each PMT's data on the list
 for pmt in ${pmt_list} ; do
-	########
-	# First, run the fits on non-filtered data.
 
 	# Select ONLY recent runs that are non-pedestal with enough statistics
 	default="iped=${iped} AND pmt=${pmt} AND gate=100 AND nevents>=500000 AND datarate>=3000 AND ll>0 AND filter=7"
 
+	# LOW-light HIGH-voltage (used to measure gain) 
 	if [ ${llhv} -eq 1 ] ; then
 		# Select the low light, high gain runs
-		./sql_select_ids.sh run_cond="ll<=50 AND hv>=1900 AND ${default}"
+		./sql_select_ids.sh llhv=1 run_cond="${default}"
 		# Run fitting algorithm to measure gain and light level
 		./run_fit_pmt.sh conGain=20 conLL=10
 		./run_fit_pmt.sh conGain=20 conLL=10 noExpo=1
@@ -62,47 +56,31 @@ for pmt in ${pmt_list} ; do
 		./run_fit_pmt.sh conGain=20 conLL=10 conInj=10
 	fi
 
+	# LOW-light LOW-voltage (used to attempt to measure gain)
 	if [ ${lllv} -eq 1 ] ; then
 		# Select the low light, low gain runs
-		./sql_select_ids.sh run_cond="ll<=50 AND hv<1900 AND ${default}"
+		./sql_select_ids.sh lllv=1 run_cond="hv>=1200 AND ${default}"
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=10 conLL=1
 		./run_fit_pmt.sh conGain=10 conLL=1 noExpo=1
 	fi
 
+	# HIGH-light HIGH-voltage (used to measure light level)
 	if [ ${hlhv} -eq 1 ] ; then
 		# Select the high light, high gain runs
-		./sql_select_ids.sh run_cond="ll>50 AND hv>=1900 AND ${default}"
+		./sql_select_ids.sh hlhv=1 run_cond="${default}"
 		# Run fitting algorithm to measure light level
 		./run_fit_pmt.sh conGain=1 conLL=20
 		./run_fit_pmt.sh conGain=0 conLL=20
 	fi
 
+	# HIGH-light LOW-voltage (used to measure gain)
 	if [ ${hllv} -eq 1 ] ; then
 		# Select the high light, low gain runs
-		./sql_select_ids.sh run_cond"ll>50 AND hv<1900 AND ${default}"
+		./sql_select_ids.sh hllv=1 run_cond"${default}"
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=20 conLL=1
 		./run_fit_pmt.sh conGain=20 conLL=0
-	fi
-
-
-	if [ ${filters} -eq 1 ] ; then
-		########
-		# Now run the filter data.
-		# Filter 8 has high light at ll=100
-		# Filter 1 has low light at ll=100
-		default="iped=${iped} AND pmt=${pmt} AND gate=100 AND nevents>=500000 AND datarate>=3000 AND ll>0"
-
-		# Filter 8
-		./sql_select_ids.sh run_cond="filter=8 AND ll=100 AND ${default}"
-		./run_fit_pmt.sh conGain=1 conLL=20
-		./run_fit_pmt.sh conGain=0 conLL=20
-
-		# Filter 1
-		./sql_select_ids.sh run_cond="filter=1 AND ll=100 AND ${default}"
-		./run_fit_pmt.sh conGain=5 conLL=20
-		./run_fit_pmt.sh conGain=0 conLL=20
 	fi
 
 done
