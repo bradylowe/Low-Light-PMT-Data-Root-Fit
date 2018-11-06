@@ -9,9 +9,15 @@ for item in $* ; do
 	# Grab fit_cond value
 	elif [[ ${name} == "fit_cond" ]] ; then
 		fit_cond=${val}
-	# Grab which id we will get
+	# Return either run_ids or fit_ids
 	elif [[ ${name} == "id" ]] ; then
 		id=${val}
+	# Only grab good fits
+	elif [[ ${name} == "good" ]] ; then
+		good=${val}
+	# Only grab recent fits
+	elif [[ ${name} == "recent" ]] ; then
+		recent=${val}
 	# Grab the high-light, high-voltage runs
 	elif [[ ${name} == "hlhv" ]] ; then
 		run_cond="((filter=7 AND ll>50) OR (filter=8 AND ll>60))"
@@ -31,51 +37,61 @@ for item in $* ; do
 	fi
 done
 
-###################### Initialize other variables, check for errors
+############################ Initialize other variables, check for errors
 # If no condition is sent in, grab all the runs available
-if [ ${#run_cond} -eq 0 -a ${#fit_cond} -eq 0 ] ; then
+if [ ${#run_cond} -eq 0 ] ; then
 	run_cond="TRUE"
+if [ ${#fit_cond} -eq 0 ] ; then
+	fit_cond="TRUE"
 fi
 # Make sure we are grabbing some type of id
 if [ ${#id} -eq 0 ] ; then
 	id="run_id"
 fi
-# Set the output filename according to id type
+if [ ${#good} -gt 0 ] ; then
+	fit_cond="${fit_cond} AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0 AND ll>0"
+fi
+if [ ${#recent} -gt 0 ] ; then
+	run_cond="${run_cond} AND iped=40 AND gate=100 AND datarate=3500"
+fi
+# Set the sql table and output filename according to id type
 if [[ ${id} == "run_id" ]] ; then
+	table="run_params"
 	outfile="selected_runs.txt"
 else
+	table="fit_results"
 	outfile="selected_fits.txt"
 fi
 
 
-################################### Query database, write results to output file
+############################# Query database, write results to output file
 
 # If the user just sent in a fit condition, just use it
-if [ ${#run_cond} -eq 0 ] ; then
+if [[ ${run_cond} == "TRUE" ]] ; then
 	# Create the query from condition
-	query="SELECT ${id} FROM fit_results WHERE ${fit_cond};"
+	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${fit_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Count the selected runs
-	query="SELECT COUNT(${id}) FROM fit_results WHERE ${fit_cond};"
+	query="USE gaindb; SELECT COUNT(${id}) FROM ${table} WHERE ${fit_cond};"
 	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 # If the user just sent in a run condition, just use it
-elif [ ${#fit_cond} -eq 0 ] ; then
+elif [[ ${fit_cond} == "TRUE" ]] ; then
 	# Create the query from condition
-	query="SELECT ${id} FROM run_params WHERE ${run_cond};"
+	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${run_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Count the selected runs
-	query="SELECT COUNT(${id}) FROM run_params WHERE ${run_cond};"
+	query="USE gaindb; SELECT COUNT(${id}) FROM ${table} WHERE ${run_cond};"
 	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 # If the user sent in both a run and a fit condition, use both
 else
 	# If the user sent in both fit and run conditions, use both
 	# Create the query from condition
-	query="SELECT ${id} FROM run_params WHERE ${run_cond};"
+	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${run_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	query="SELECT ${id} FROM fit_results WHERE ${id} IN (${ret}) AND ${fit_cond};"
+	query="USE gaindb; SELECT ${id} FROM ${table} WHERE ${id} IN (${ret}) AND ${fit_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Count the selected runs
-	query="SELECT COUNT(${id}) FROM fit_results WHERE ${id} IN (${ret});"
+	query="USE gaindb; SELECT COUNT(${id}) FROM ${table} WHERE ${id} IN (${ret});"
 	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 fi
 

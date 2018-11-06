@@ -88,11 +88,18 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This file writes the selected run_ids (fit_ids) to the selected_runs.txt (selected_fits.txt).
  - The type of id is selected with the "id" variable.
  - Example usage:   ./sql_select_ids.sh id="fit_id" run_cond="hv=2000 AND ll<90" fit_cond="chi<2"
+ - Here is a list of possible input parameters as well as possible values:
+    * id="fit_id"
+    * good=0
+    * recent=1
+    * hvhl=1
+    * fit_cond="chi<2 AND mu_out < 5.5"
+    * run_cond="hv>1700 AND hv<2000 AND gate=100"
 
 ### *sql_remove_fits.sh*
  - This script removes all the fits in selected_fits.txt
-   * The row is removed from the SQL table.
-   * Any associated images are deleted from file.
+    * The row is removed from the SQL table.
+    * Any associated images are deleted from file.
 
 ### *sql_view_fits.sh*
  - This script opens eog file viewer with all filenames corresponding to selected_fits.txt
