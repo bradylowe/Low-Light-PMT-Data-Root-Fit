@@ -13,8 +13,8 @@ for item in $* ; do
 		hllv=${val}
 	elif [[ ${name} == "lllv" ]] ; then
 		lllv=${val}
-	elif [[ ${name} == "iped" ]] ; then
-		iped=${val}
+	elif [[ ${name} == "all" ]] ; then
+		all=${val}
 	fi
 done
 
@@ -26,7 +26,7 @@ if [ ${#hlhv} -eq 0 ] ; then
 	hlhv=0
 fi
 if [ ${#llhv} -eq 0 ] ; then
-	llhv=1
+	llhv=0
 fi
 if [ ${#hllv} -eq 0 ] ; then
 	hllv=0
@@ -34,8 +34,13 @@ fi
 if [ ${#lllv} -eq 0 ] ; then
 	lllv=0
 fi
-if [ ${#iped} -eq 0 ] ; then
-	iped=40
+if [ ${#all} -gt 0 ] ; then
+	if [ ${all} -eq 1 ] ; then
+		hlhv=1
+		llhv=1
+		hllv=1
+		lllv=1
+	fi
 fi
 
 
@@ -56,7 +61,7 @@ for pmt in ${pmt_list} ; do
 	# LOW-light LOW-voltage (used to attempt to measure gain)
 	if [ ${lllv} -eq 1 ] ; then
 		# Select the low light, low gain runs
-		./sql_select_ids.sh lllv=1 good=1 recent=1 run_cond="hv>=1600"
+		./sql_select_ids.sh lllv=1 good=1 recent=1 
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=10 conLL=1
 		./run_fit_pmt.sh conGain=10 conLL=1 noExpo=1

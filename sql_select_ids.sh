@@ -20,20 +20,28 @@ for item in $* ; do
 		recent=${val}
 	# Grab the high-light, high-voltage runs
 	elif [[ ${name} == "hlhv" ]] ; then
-		run_cond="((filter=7 AND ll>50) OR (filter=8 AND ll>60))"
-		run_cond="${run_cond} AND hv >= 1800"
+		if [ ${val} -eq 1 ] ; then
+			run_cond="((filter=7 AND ll>50) OR (filter=8 AND ll>60))"
+			run_cond="${run_cond} AND hv >= 1800"
+		fi
 	# Grab the high-light, low-voltage runs
 	elif [[ ${name} == "hllv" ]] ; then
-		run_cond="((filter=7 AND ll>50) OR (filter=8 AND ll>60))"
-		run_cond="${run_cond} AND hv < 1800"
+		if [ ${val} -eq 1 ] ; then
+			run_cond="((filter=7 AND ll>50) OR (filter=8 AND ll>60))"
+			run_cond="${run_cond} AND hv < 1800"
+		fi
 	# Grab the low-light, high-voltage runs
 	elif [[ ${name} == "llhv" ]] ; then
-		run_cond="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1))"
-		run_cond="${run_cond} AND hv >= 1800"
+		if [ ${val} -eq 1 ] ; then
+			run_cond="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1))"
+			run_cond="${run_cond} AND hv >= 1800"
+		fi
 	# Grab the low-light, low-voltage runs
 	elif [[ ${name} == "lllv" ]] ; then
-		run_cond="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1))"
-		run_cond="${run_cond} AND hv < 1800"
+		if [ ${val} -eq 1 ] ; then
+			run_cond="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1))"
+			run_cond="${run_cond} AND hv < 1800"
+		fi
 	fi
 done
 
@@ -50,11 +58,15 @@ if [ ${#id} -eq 0 ] ; then
 	id="run_id"
 fi
 if [ ${#good} -gt 0 ] ; then
-	run_cond="${run_cond} AND ll>0 AND nevents>500000"
-	fit_cond="${fit_cond} AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
+	if [ ${good} -eq 1 ] ; then
+		run_cond="${run_cond} AND ll>0 AND nevents>=500000"
+		fit_cond="${fit_cond} AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
+	fi
 fi
-if [ ${#recent} -gt 0 ] ; then
-	run_cond="${run_cond} AND iped=40 AND gate=100 AND datarate=3500"
+if [ ${#recent} -gt 0  ] ; then
+	if [ ${recent} -eq 1 ] ; then
+		run_cond="${run_cond} AND iped=40 AND gate=100 AND datarate=3500"
+	fi
 fi
 # Set the output filename and table name according to id type
 if [[ ${id} == "run_id" ]] ; then
