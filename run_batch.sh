@@ -42,13 +42,10 @@ fi
 # Run all the different fits for each PMT's data on the list
 for pmt in ${pmt_list} ; do
 
-	# Select ONLY recent runs that are non-pedestal with enough statistics
-	default="iped=${iped} AND pmt=${pmt} AND gate=100 AND nevents>=500000 AND datarate>=3000 AND ll>0 AND filter=7"
-
 	# LOW-light HIGH-voltage (used to measure gain) 
 	if [ ${llhv} -eq 1 ] ; then
 		# Select the low light, high gain runs
-		./sql_select_ids.sh llhv=1 run_cond="${default}"
+		./sql_select_ids.sh llhv=1 good=1 recent=1 
 		# Run fitting algorithm to measure gain and light level
 		./run_fit_pmt.sh conGain=20 conLL=10
 		./run_fit_pmt.sh conGain=20 conLL=10 noExpo=1
@@ -59,7 +56,7 @@ for pmt in ${pmt_list} ; do
 	# LOW-light LOW-voltage (used to attempt to measure gain)
 	if [ ${lllv} -eq 1 ] ; then
 		# Select the low light, low gain runs
-		./sql_select_ids.sh lllv=1 run_cond="hv>=1200 AND ${default}"
+		./sql_select_ids.sh lllv=1 good=1 recent=1 run_cond="hv>=1600"
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=10 conLL=1
 		./run_fit_pmt.sh conGain=10 conLL=1 noExpo=1
@@ -68,7 +65,7 @@ for pmt in ${pmt_list} ; do
 	# HIGH-light HIGH-voltage (used to measure light level)
 	if [ ${hlhv} -eq 1 ] ; then
 		# Select the high light, high gain runs
-		./sql_select_ids.sh hlhv=1 run_cond="${default}"
+		./sql_select_ids.sh hlhv=1 good=1 recent=1
 		# Run fitting algorithm to measure light level
 		./run_fit_pmt.sh conGain=1 conLL=20
 		./run_fit_pmt.sh conGain=0 conLL=20
@@ -77,7 +74,7 @@ for pmt in ${pmt_list} ; do
 	# HIGH-light LOW-voltage (used to measure gain)
 	if [ ${hllv} -eq 1 ] ; then
 		# Select the high light, low gain runs
-		./sql_select_ids.sh hllv=1 run_cond"${default}"
+		./sql_select_ids.sh hllv=1 good=1 recent=1
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=20 conLL=1
 		./run_fit_pmt.sh conGain=20 conLL=0

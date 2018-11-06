@@ -50,7 +50,8 @@ if [ ${#id} -eq 0 ] ; then
 	id="run_id"
 fi
 if [ ${#good} -gt 0 ] ; then
-	fit_cond="${fit_cond} AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0 AND ll>0"
+	run_cond="${run_cond} AND ll>0 AND nevents>500000"
+	fit_cond="${fit_cond} AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
 fi
 if [ ${#recent} -gt 0 ] ; then
 	run_cond="${run_cond} AND iped=40 AND gate=100 AND datarate=3500"
