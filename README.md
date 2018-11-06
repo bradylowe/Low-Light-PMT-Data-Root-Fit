@@ -83,26 +83,22 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ---
 ---
 
-### *sql_select_runs.sh*
- - This script takes in a string as inputs that is used in mysql query to run_params table.
- - This file writes the selected run_ids to the selected_runs.txt file.
-
-### *sql_select_fits.sh*
- - This script is just like the above except it takes in two query strings and outputs fit_ids instead of run_ids.
- - The first input string is a query to run_params. The second queries fit_results.
- - If only one parameter is sent in, it is used to query fit_results table.
+### *sql_select_ids.sh*
+ - This script takes in a conditional statement run_cond and/or fit_cond to select run_ids or fit_ids from the sql table.
+ - This file writes the selected run_ids (fit_ids) to the selected_runs.txt (selected_fits.txt).
+ - The type of id is selected with the "id" variable.
+ - Example usage:   ./sql_select_ids.sh id="fit_id" run_cond="hv=2000 AND ll<90" fit_cond="chi<2"
 
 ### *sql_remove_fits.sh*
  - This script removes all the fits in selected_fits.txt
- - The row is removed from the SQL table.
- - Any associated images are deleted from file.
+   * The row is removed from the SQL table.
+   * Any associated images are deleted from file.
 
 ### *sql_view_fits.sh*
  - This script opens eog file viewer with all filenames corresponding to selected_fits.txt
 
 ### *sql_average.sh*
- - This script takes in an argument which is a column in the fit_results table.
- - The script finds the average and standard dev of the column for the runs in selected_runs.txt.
+ - This script takes in an argument which is a column in the fit_results table and finds the average and standard dev of the column for the runs in selected_runs.txt.
 
 ### *sql_ave_errors.sh*
  - This script is just like the above, but it also grabs the errors column and returns it.

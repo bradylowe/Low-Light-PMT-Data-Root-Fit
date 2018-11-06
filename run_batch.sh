@@ -54,7 +54,7 @@ for pmt in ${pmt_list} ; do
 
 	if [ ${llhv} -eq 1 ] ; then
 		# Select the low light, high gain runs
-		./sql_select_runs.sh "ll<=50 AND hv>=1900 AND ${default}"
+		./sql_select_ids.sh run_cond="ll<=50 AND hv>=1900 AND ${default}"
 		# Run fitting algorithm to measure gain and light level
 		./run_fit_pmt.sh conGain=20 conLL=10
 		./run_fit_pmt.sh conGain=20 conLL=10 noExpo=1
@@ -64,7 +64,7 @@ for pmt in ${pmt_list} ; do
 
 	if [ ${lllv} -eq 1 ] ; then
 		# Select the low light, low gain runs
-		./sql_select_runs.sh "ll<=50 AND hv<1900 AND ${default}"
+		./sql_select_ids.sh run_cond="ll<=50 AND hv<1900 AND ${default}"
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=10 conLL=1
 		./run_fit_pmt.sh conGain=10 conLL=1 noExpo=1
@@ -72,7 +72,7 @@ for pmt in ${pmt_list} ; do
 
 	if [ ${hlhv} -eq 1 ] ; then
 		# Select the high light, high gain runs
-		./sql_select_runs.sh "ll>50 AND hv>=1900 AND ${default}"
+		./sql_select_ids.sh run_cond="ll>50 AND hv>=1900 AND ${default}"
 		# Run fitting algorithm to measure light level
 		./run_fit_pmt.sh conGain=1 conLL=20
 		./run_fit_pmt.sh conGain=0 conLL=20
@@ -80,7 +80,7 @@ for pmt in ${pmt_list} ; do
 
 	if [ ${hllv} -eq 1 ] ; then
 		# Select the high light, low gain runs
-		./sql_select_runs.sh "ll>50 AND hv<1900 AND ${default}"
+		./sql_select_ids.sh run_cond"ll>50 AND hv<1900 AND ${default}"
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=20 conLL=1
 		./run_fit_pmt.sh conGain=20 conLL=0
@@ -95,12 +95,12 @@ for pmt in ${pmt_list} ; do
 		default="iped=${iped} AND pmt=${pmt} AND gate=100 AND nevents>=500000 AND datarate>=3000 AND ll>0"
 
 		# Filter 8
-		./sql_select_runs.sh "filter=8 AND ll=100 AND ${default}"
+		./sql_select_ids.sh run_cond="filter=8 AND ll=100 AND ${default}"
 		./run_fit_pmt.sh conGain=1 conLL=20
 		./run_fit_pmt.sh conGain=0 conLL=20
 
 		# Filter 1
-		./sql_select_runs.sh "filter=1 AND ll=100 AND ${default}"
+		./sql_select_ids.sh run_cond="filter=1 AND ll=100 AND ${default}"
 		./run_fit_pmt.sh conGain=5 conLL=20
 		./run_fit_pmt.sh conGain=0 conLL=20
 	fi
