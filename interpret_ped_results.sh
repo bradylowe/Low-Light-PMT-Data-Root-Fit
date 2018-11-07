@@ -6,7 +6,7 @@ while read line ; do
 	signal=$(echo ${line} | awk '{print $3}' | awk -F':' '{print $2}')
 
 	# Measure mu_out
-	count=$(./sql_select_fits.sh "run_id=${id}" "TRUE" | awk '{print $1}')
+	count=$(./sql_select_ids.sh id="fit_id" run_cond="run_id=${id}" good=1 | awk '{print $1}')
 	if [ ${count} -eq 0 ] ; then
 		continue
 	fi
@@ -14,7 +14,7 @@ while read line ; do
 	mu=${mu%,*}
 	mu=${mu#*:*(}
 
-	# Get hv from sql table
+	# Get hv, pmt from sql table
 	hv=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT hv FROM run_params WHERE run_id=${id};")
 	pmt=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT pmt FROM run_params WHERE run_id=${id};")
 

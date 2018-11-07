@@ -51,11 +51,11 @@ for pmt in ${pmt_list} ; do
 	if [ ${llhv} -eq 1 ] ; then
 		# Select the low light, high gain runs
 		./sql_select_ids.sh llhv=1 good=1 recent=1 
-		# Run fitting algorithm to measure gain and light level
-		./run_fit_pmt.sh conGain=20 conLL=10
-		./run_fit_pmt.sh conGain=20 conLL=10 noExpo=1
-		./run_fit_pmt.sh conGain=20 conLL=10 fitEngine=1
-		./run_fit_pmt.sh conGain=20 conLL=10 conInj=10
+		# Run fitting algorithm to measure gain
+		./run_fit_pmt.sh conGain=10 conLL=10
+		./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
+		./run_fit_pmt.sh conGain=10 conLL=10 fitEngine=1
+		./run_fit_pmt.sh conGain=10 conLL=10 conInj=10
 	fi
 
 	# LOW-light LOW-voltage (used to attempt to measure gain)

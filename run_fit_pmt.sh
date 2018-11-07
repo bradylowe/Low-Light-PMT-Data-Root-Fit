@@ -34,10 +34,8 @@ im_dir=$(grep im_dir setup.txt | awk -F'=' '{print $2}')
 
 # Loop through input parameters
 for item in $* ; do
-	# Grab name of input param
 	name=$(echo ${item} | awk -F'=' '{print $1 }')
-	# Grab value
-	val=$(echo ${item} | awk -F'=' '{print $2 }')
+	val=${item#${name}=}
 	# Check for some words
 	if [[ ${val} == "true" || ${val} == "True" ]] ; then
 		val=1
