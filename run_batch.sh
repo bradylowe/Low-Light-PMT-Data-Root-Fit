@@ -1,9 +1,17 @@
 
-# Parse command line inputs
+# Initialize input parameters
+pmt_list="1 2 3 4"
+hlhv=0
+llhv=0
+hllv=0
+lllv=0
+extra_fits=0
+
+# Parse input parameters
 for item in $* ; do
 	name=$(echo ${item} | awk -F'=' '{print $1}')
 	val=$(echo ${item} | awk -F'=' '{print $2}')
-	if [[ ${name} == "pmt_list" ]] ; then
+	if [[ ${name} == "pmt_list" || ${name} == "pmt" ]] ; then
 		pmt_list=${val}
 	elif [[ ${name} == "hlhv" ]] ; then
 		hlhv=${val}
@@ -14,35 +22,16 @@ for item in $* ; do
 	elif [[ ${name} == "lllv" ]] ; then
 		lllv=${val}
 	elif [[ ${name} == "all" ]] ; then
-		all=${val}
+		if [ ${val} -eq 1 ] ; then
+			hlhv=1
+			llhv=1
+			hllv=1
+			lllv=1
+		fi
+	elif [[ ${name} == "extra_fits" ]] ; then
+		extra_fits=${val}
 	fi
 done
-
-# Initialize all unspecified arguments
-if [ ${#pmt_list} -eq 0 ] ; then
-	pmt_list="1 2 3 4"
-fi
-if [ ${#hlhv} -eq 0 ] ; then
-	hlhv=0
-fi
-if [ ${#llhv} -eq 0 ] ; then
-	llhv=0
-fi
-if [ ${#hllv} -eq 0 ] ; then
-	hllv=0
-fi
-if [ ${#lllv} -eq 0 ] ; then
-	lllv=0
-fi
-if [ ${#all} -gt 0 ] ; then
-	if [ ${all} -eq 1 ] ; then
-		hlhv=1
-		llhv=1
-		hllv=1
-		lllv=1
-	fi
-fi
-
 
 # Run all the different fits for each PMT's data on the list
 for pmt in ${pmt_list} ; do
@@ -54,8 +43,10 @@ for pmt in ${pmt_list} ; do
 		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=10 conLL=10
 		./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
-		./run_fit_pmt.sh conGain=10 conLL=10 fitEngine=1
-		./run_fit_pmt.sh conGain=10 conLL=10 conInj=10
+		if [ ${extra_fits} -eq 1 ] ; then
+			./run_fit_pmt.sh conGain=10 conLL=10 fitEngine=1
+			./run_fit_pmt.sh conGain=10 conLL=10 conInj=10
+		fi
 	fi
 
 	# LOW-light LOW-voltage (used to attempt to measure gain)
