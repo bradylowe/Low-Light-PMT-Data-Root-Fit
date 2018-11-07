@@ -14,7 +14,7 @@ lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < 18
 good_runs="ll>0 AND nevents>=500000"
 good_fits="chi>=0 AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
 
-recent_runs="iped=40 AND gate=100 AND datarate=3500"
+recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
 
 ############################################### Parse input parameters
 for item in $* ; do
@@ -22,6 +22,7 @@ for item in $* ; do
 	val=${item#${name}=}
 	# Grab run_cond value
 	if [[ ${name} == "run_cond" ]] ; then
+		val=$(echo ${val} | sed "s/-/ /g")
 		run_cond="${run_cond} AND ${val}"
 	# Grab fit_cond value
 	elif [[ ${name} == "fit_cond" ]] ; then
