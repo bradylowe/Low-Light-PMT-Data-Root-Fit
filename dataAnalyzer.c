@@ -15,6 +15,21 @@ int myStoi(string str) {
 	return ret;
 }
 
+// String to double function
+double myStod(string str) {
+	// Return double value
+	double ret = 0.0;
+	// Decompose string into before and after decimal parts
+	string before, after;
+	int index = str.find(".");
+	before = str.substr(0, index);
+	after = str.substr(index + 1);
+	// Calculate return value
+	ret = (double)(myStoi(before));
+	ret += (double)(myStoi(after)) / pow(10.0, after.length());
+	return ret;
+}
+
 // Returns the run number of a root file that
 // is stored within the file name itself:
 //  - getRunNumFromFilename("r1729_v965ST_5.root") returns 1729
@@ -212,6 +227,54 @@ void writeHistToFile(TH1F *hist, const char* rootFile, Int_t bins) {
                 file.close();
         } else printf("\nUnable to write histogram values to file for %s.\n", rootFile);
 	return;
+}
+
+// This function takes in three numbers and reads a value from
+// a line in a file based on the inputs.
+Double_t getValueFromFile(Int_t pmt, Int_t val, Int_t choice){
+	// Open the appropriate file
+	ifstream myfile;
+	if (choice == 0) {
+		myfile.open(Form("pmt%d_gain.txt", pmt));
+	} else if (choice == 1) {
+		myfile.open(Form("pmt%d_ll.txt", pmt));
+	} else if (choice == 2) {
+		myfile.open("filters.txt");
+	}
+	// Check for error
+	if (!myfile.is_open()) {
+		printf("Error opening calibration file\n");
+		return 0.0;
+	}
+	// Loop through the lines until the desired line if found
+	string line;
+	Int_t flag;
+	Int_t index;
+	while (getline(myfile, line)) {
+		index = line.find(" ");
+		flag = myStoi(line.substr(0, index));
+		if (flag != val) continue;
+		return myStod(line.substr(index + 1));
+	}
+	return 0.0;
+}
+
+// This function takes in pmt number and high voltage setting and reads from file
+// the corresponding initial guess for the signal size of 1-PE for that pmt/hv.
+Double_t getSignalFromHV(Int_t pmt, Int_t hv) {
+	return getValueFromFile(pmt, hv, 0);
+}
+
+// This function takes in pmt number and light level setting and reads from file
+// the corresponding initial guess of mu for that pmt/ll.
+Double_t getMuFromLL(Int_t pmt, Int_t ll) {
+	return getValueFromFile(pmt, ll, 1);
+}
+
+// This function takes in pmt number and light level setting and reads from file
+// the corresponding initial guess of mu for that pmt/ll.
+Double_t getTransparencyFromFilter(Int_t filter) {
+	return getValueFromFile(1, filter, 2);
 }
 
 // This function takes in a filename to a .hist file as well as a list of parameters and

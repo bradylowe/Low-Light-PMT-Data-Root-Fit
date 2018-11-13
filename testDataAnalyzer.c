@@ -20,11 +20,14 @@
 #include <TLine.h>
 
 
-int testDataAnalyzer(string histogram){
+double testDataAnalyzer(int pmt, int val, int choice){
 
-	createPngFromNumbers(histogram);
-
-	return 1;
+	//createPngFromNumbers(histogram);
+	if (choice == 0)
+		return getSignalFromHV(pmt, val);
+	else if (choice == 1)
+		return getMuFromLL(pmt, val);
+	else return getTransparencyFromFilter(val);
 }
 
 

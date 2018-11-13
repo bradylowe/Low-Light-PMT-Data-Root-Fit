@@ -33,8 +33,6 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ### *fit_pmt_wrapper.c*
  - This Root macro serves as a bridge between the immense power and detail of fit_pmt.c and the ease of use of run_fit_pmt.sh (described next).
  - This macro takes in only 22 parameters that are much more aligned with human concerns such as which run number to use, how much to constrain our varaibles during fitting, which types of outputs to save, and any initial conditions we would like considered.
- - This macro also contains hard-coded into it all of our currently accepted PMT, light source, and filter calibration values measured and set by me personally. Unfortunately, some of these values are subject to change (though the gains of the tubes shouldn't change).
- - This macro has an option to print a thorough summary of the settings that went into producing this fit.
 
 ### *run_fit_pmt.sh* 
  - This shell script is a Cadillac compared to the above C-code. 
@@ -47,11 +45,9 @@ This repository houses code for modeling the response of photomultiplier tubes a
     * conLL (constrain ll)
     * pedInj (initial pedestal injection rate guess)
     * conInj (constrain)
-    * pngFile (output montage name [for multiple files])
     * rootFile (source data filename)
     * fitEngine (Root fit engine options)
     * tile (for custom montage tiling)
-    * printSum (boolean for printing summary box)
     * savePNG (boolean for saving human style png)
     * saveNN (boolean for saving neural network output png)
     * runs (list of run id's to fit)
@@ -62,7 +58,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 ### *fit_high_light.c*
  - This macro assumes a gaussian pedestal and a gaus+exp tail.
- - This macro returns the separation between the two distribution means.
+ - It returns the separation between the two distribution means.
 
 ### *run_fit_high_light.sh*
  - This script executes the high light fit macro on all selected_runs.txt.
@@ -123,6 +119,14 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ---
 ---
 ---
+
+### *Other setup files:*
+ - pmtN_gain.txt
+    * This collection of files stores pmt gain signal size calibrations for measured high voltages.
+ - pmtN_ll.txt
+    * This collection of files stores light level calibrations for a given pmt.
+ - filters.txt
+    * This file stores the transparencies of our filters.
 
 ### *histograms:*
  - This directory houses a collection of text files with numbers in them.

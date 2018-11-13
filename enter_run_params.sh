@@ -15,14 +15,14 @@
 ####################################################################
 
 # Initialize values to be input into table
-pmt=3
+pmt=5
+base=5
 hv=2000
 filter=7
 ll=0
 adc="v965ST"
 chan="12"
 gate="100"
-base=1
 iped=40
 datarate=3500
 pedrate=400
@@ -53,12 +53,12 @@ for rootfile in ${selected_files} ; do
 	# Remove the letters "daq"
 	daq=${daq:3}
 	# Remove leading 'daq?/r' and '.root'
-	run_num=${rootfile:6}
+	run_num=${rootfile#daq${daq}/r}
 	run_num=${run_num%.root}
 	run_num=${run_num%_*}
 
 	# Only do files that have bigger run numbers than the ones we have
-	query="USE gaindb; SELECT MAX(run_num) FROM run_params WHERE daq=${daq}';"
+	query="USE gaindb; SELECT MAX(run_num) FROM run_params WHERE daq=${daq};"
 	max_run_num=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	if [ ${run_num} -lt ${max_run_num} ] ; then
 		continue
