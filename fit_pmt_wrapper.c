@@ -17,8 +17,8 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 
 	// w - probability of type II background
 	Double_t w0 		= 0.01;
-	Double_t wmin 		= 0.0001;
-	Double_t wmax 		= 1.0;
+	Double_t wmin 		= off;
+	Double_t wmax 		= off;
 	// If we are not considering exponential, set these to zero
 	if (noExpo == 1) {
 		w0 = 0.0;
@@ -28,18 +28,18 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 
 	// ped - mean of pedestal
 	Double_t ped0 		= getDataMinMax(rootFile, chan, 0, lowRangeThresh);
-	Double_t pedmin 	= 200.0;
-	Double_t pedmax 	= 260.0;
+	Double_t pedmin 	= off;
+	Double_t pedmax 	= off;
 
 	// pedrms - rms of pedestal
 	Double_t pedrms0 	= 1.5;
-	Double_t pedrmsmin 	= 0.5;
-	Double_t pedrmsmax 	= 10.0;
+	Double_t pedrmsmin 	= off;
+	Double_t pedrmsmax 	= off;
 
 	// alpha - exponential decay rate
 	Double_t alpha0 	= 0.405;
-	Double_t alphamin 	= 0.00001;
-	Double_t alphamax 	= 1.0;
+	Double_t alphamin 	= off;
+	Double_t alphamax 	= off;
 	// If we are not considering exponential, set these to zero
 	if (noExpo == 1) {
 		alpha0 = 0.0;
@@ -76,8 +76,8 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	}
 	// sigrms - rms of signal
 	Double_t sigrms0 	= 1.8;
-	Double_t sigrmsmin 	= 0.0;
-	Double_t sigrmsmax 	= 2.5;
+	Double_t sigrmsmin 	= off;
+	Double_t sigrmsmax 	= off;
 	if (hv < 1000 && pmt < 5) {sigrmsmax = 0.1;}
 	else if (hv < 1400 && pmt < 5) {sigrmsmax = 0.5;}
 	// inj - proportion of data that are injected pedestal
