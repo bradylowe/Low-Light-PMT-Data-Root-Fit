@@ -175,7 +175,7 @@ double fit_high_light(string rootFile, Int_t scale = 0, Int_t savePNG = 0) {
 	Int_t cut = rootFile.find("/r") + 1;
 	rootFile = rootFile.substr(cut);
 	canvas->Update();
-	canvas->Print(Form("/media/data/Projects/fit_pmt/images/high_light/%s.png", rootFile.c_str()));
+	canvas->Print(Form("%s.png", rootFile.c_str()));
 	
 	// Return difference in means
 	if (scale == 0)	return fit_sig->GetParameter(1) - fit_ped->GetParameter(1);

@@ -15,6 +15,7 @@ fit_cols=${fit_cols:12} # Remove "COLUMN_NAME "
 if [[ $1 == "help" ]] ; then
 	echo
 	echo run_params: ${run_cols} | sed 's/ /, /g'
+	echo
 	echo fit_params: ${fit_cols} | sed 's/ /, /g'
 	echo
 	exit
@@ -78,8 +79,8 @@ for fitID in ${fits} ; do
 	done
 done
 
-if [ ${#5} -gt 0 ] ; then
-	root -l "make_plot.c($5)"
+if [[ ${x} == "hv" && ${y} == "gain" ]] ; then
+	root -l "make_gain_plot.c()"
 else
 	root -l "make_plot.c()"
 fi

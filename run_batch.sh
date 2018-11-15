@@ -1,6 +1,6 @@
 
 # Initialize input parameters
-pmt_list="1 2 3 4"
+pmt_list="1 2 3 4 5 6"
 hlhv=0
 llhv=0
 hllv=0
@@ -40,11 +40,13 @@ for pmt in ${pmt_list} ; do
 	if [ ${llhv} -eq 1 ] ; then
 		# Select the low light, high gain runs
 		./sql_select_ids.sh llhv=1 good=1 recent=1 
-		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=10 conLL=10
+		./sql_select_ids.sh llhv=1 good=1 recent=1 
 		./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
 		if [ ${extra_fits} -eq 1 ] ; then
+			./sql_select_ids.sh llhv=1 good=1 recent=1 
 			./run_fit_pmt.sh conGain=10 conLL=10 fitEngine=1
+			./sql_select_ids.sh llhv=1 good=1 recent=1 
 			./run_fit_pmt.sh conGain=10 conLL=10 conInj=10
 		fi
 	fi
@@ -53,8 +55,8 @@ for pmt in ${pmt_list} ; do
 	if [ ${lllv} -eq 1 ] ; then
 		# Select the low light, low gain runs
 		./sql_select_ids.sh lllv=1 good=1 recent=1 
-		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=10 conLL=1
+		./sql_select_ids.sh lllv=1 good=1 recent=1 
 		./run_fit_pmt.sh conGain=10 conLL=1 noExpo=1
 	fi
 
@@ -62,8 +64,8 @@ for pmt in ${pmt_list} ; do
 	if [ ${hlhv} -eq 1 ] ; then
 		# Select the high light, high gain runs
 		./sql_select_ids.sh hlhv=1 good=1 recent=1
-		# Run fitting algorithm to measure light level
 		./run_fit_pmt.sh conGain=1 conLL=20
+		./sql_select_ids.sh hlhv=1 good=1 recent=1
 		./run_fit_pmt.sh conGain=0 conLL=20
 	fi
 
@@ -71,8 +73,8 @@ for pmt in ${pmt_list} ; do
 	if [ ${hllv} -eq 1 ] ; then
 		# Select the high light, low gain runs
 		./sql_select_ids.sh hllv=1 good=1 recent=1
-		# Run fitting algorithm to measure gain
 		./run_fit_pmt.sh conGain=20 conLL=1
+		./sql_select_ids.sh hllv=1 good=1 recent=1
 		./run_fit_pmt.sh conGain=20 conLL=0
 	fi
 
