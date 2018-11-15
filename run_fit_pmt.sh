@@ -206,7 +206,6 @@ for cur_id in ${run_list} ; do
 		bothpng=$(echo ${png} | sed 's/log0/logX/g')
 		# Create the montage and put it where it goes
 		montage -label "%f" -frame 5 -geometry 500x400+1+1 ${png} ${logpng} ${bothpng}
-		mv ${bothpng} ${im_dir}/png_fit/.
 		# Delete single images, keep montage of both images
 		created_pngs="${created_pngs} ${im_dir}/png_fit/${bothpng}"
 		rm ${png} ${logpng}
@@ -218,7 +217,6 @@ for cur_id in ${run_list} ; do
 	if [ ${saveNN} -eq 1 ] ; then
 		nnpng=$(ls fit_pmt_nn__fitID${fitID}_runID${1}_*log0.png)
 		nnlogpng=$(echo ${nnpng} | sed 's/log0/log1/g')
-		mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/.
 	fi
 
 	# Query the database to store all output info from this fit

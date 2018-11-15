@@ -231,16 +231,10 @@ void writeHistToFile(TH1F *hist, const char* rootFile, Int_t bins) {
 
 // This function takes in three numbers and reads a value from
 // a line in a file based on the inputs.
-Double_t getValueFromFile(Int_t pmt, Int_t val, Int_t choice){
-	// Open the appropriate file
+Double_t getValueFromCSV(string filename, int head, int valueIndex = 1){
+	// Open the file
 	ifstream myfile;
-	if (choice == 0) {
-		myfile.open(Form("pmt%d_gain.txt", pmt));
-	} else if (choice == 1) {
-		myfile.open(Form("pmt%d_ll.txt", pmt));
-	} else if (choice == 2) {
-		myfile.open("filters.txt");
-	}
+	myfile.open(filename);
 	// Check for error
 	if (!myfile.is_open()) {
 		printf("Error opening calibration file\n");
@@ -248,12 +242,17 @@ Double_t getValueFromFile(Int_t pmt, Int_t val, Int_t choice){
 	}
 	// Loop through the lines until the desired line if found
 	string line;
-	Int_t flag;
+	Int_t compare;
 	Int_t index;
 	while (getline(myfile, line)) {
-		index = line.find(" ");
-		flag = myStoi(line.substr(0, index));
-		if (flag != val) continue;
+		// Grab index of first comma, find correct line
+		index = line.find(",");
+		compare = myStoi(line.substr(0, index));
+		if (compare != head) continue;
+		// Find index of value desired
+		for (int ii = 1; ii < valueIndex; ii++) 
+			index = line.find(",", index + 1);
+		// Return the value
 		return myStod(line.substr(index + 1));
 	}
 	return 0.0;
@@ -262,19 +261,22 @@ Double_t getValueFromFile(Int_t pmt, Int_t val, Int_t choice){
 // This function takes in pmt number and high voltage setting and reads from file
 // the corresponding initial guess for the signal size of 1-PE for that pmt/hv.
 Double_t getSignalFromHV(Int_t pmt, Int_t hv) {
-	return getValueFromFile(pmt, hv, 0);
+	string filename = Form("calibration/pmt%d_gain.csv", pmt);
+	return getValueFromCSV(filename, hv);
 }
 
 // This function takes in pmt number and light level setting and reads from file
 // the corresponding initial guess of mu for that pmt/ll.
 Double_t getMuFromLL(Int_t pmt, Int_t ll) {
-	return getValueFromFile(pmt, ll, 1);
+	string filename = Form("calibration/pmt%d_ll.csv", pmt);
+	return getValueFromCSV(filename, ll);
 }
 
 // This function takes in pmt number and light level setting and reads from file
 // the corresponding initial guess of mu for that pmt/ll.
 Double_t getTransparencyFromFilter(Int_t filter) {
-	return getValueFromFile(1, filter, 2);
+	string filename = "calibration/filters.csv";
+	return getValueFromCSV(filename, filter);
 }
 
 // This function takes in a filename to a .hist file as well as a list of parameters and
