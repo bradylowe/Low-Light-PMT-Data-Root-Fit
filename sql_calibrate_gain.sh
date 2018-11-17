@@ -38,7 +38,7 @@ for pmt in ${pmt_list} ; do
 		new_val=${new_val%,*}
 		check=$(echo ${new_val} | grep .)
 		if [[ ${check} != "no fits" && ${check:0:1} != "-" ]] ; then
-			old_line=$(grep ${hv} calibration/pmt${pmt}_gain.csv)
+			old_line=$(grep ${hv}, calibration/pmt${pmt}_gain.csv)
 			old_val=$(echo ${old_line} | awk -F',' '{print $2}')
 			new_line=$(echo ${old_line} | sed "s/${old_val}/${new_val}/g")
 			sed -i "s/${old_line}/${new_line}/g" ${csv_file}

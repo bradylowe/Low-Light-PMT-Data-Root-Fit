@@ -1,7 +1,7 @@
 
 # Initialize input parameters
 pmt_list=""
-ll_list="20 25 30 35 40 45 50 55 60 70 80 90 100"
+ll_list=""
 
 # Parse input
 for item in $* ; do
@@ -29,7 +29,7 @@ for pmt in ${pmt_list} ; do
 		new_val=${new_val%,*}
 		check=$(echo ${new_val} | grep .)
 		if [[ ${check} != "no fits" && ${check:0:1} != "-" ]] ; then
-			old_line=$(grep ${ll} ${csv_file})
+			old_line=$(grep ${ll}, ${csv_file})
 			old_val=$(echo ${old_line} | awk -F',' '{print $2}')
 			new_line=$(echo ${old_line} | sed "s/${old_val}/${new_val}/g")
 			sed -i "s/${old_line}/${new_line}/g" ${csv_file}
