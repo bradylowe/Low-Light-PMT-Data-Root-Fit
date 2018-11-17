@@ -6,7 +6,6 @@ llhv=0
 hllv=0
 lllv=0
 extra_fits=0
-all=1
 
 # Parse input parameters
 for item in $* ; do

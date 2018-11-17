@@ -226,10 +226,10 @@ for cur_id in ${run_list} ; do
 	if [ -f ${sqlfile} -a ${noSQL} -eq 0 ] ; then
 		# Move the images to the storage directories
 		if [ ${savePNG} -gt 0 ] ; then
-			mv fit_pmt__*.png ${im_dir}/png_fit/.
+			mv fit_pmt__fitID${fitID}_*.png ${im_dir}/png_fit/.
 		fi
 		if [ ${saveNN} -gt 0 ] ; then
-			mv fit_pmt_nn__*.png ${im_dir}/png_fit_nn/.
+			mv fit_pmt_nn__fitID${fitID}_*.png ${im_dir}/png_fit_nn/.
 		fi
 		# Initialize the update query
 		query="USE gaindb; UPDATE fit_results SET $(head -n 1 ${sqlfile})"
