@@ -32,8 +32,10 @@ for pmt in ${pmt_list} ; do
 			old_line=$(grep ${ll}, ${csv_file})
 			old_val=$(echo ${old_line} | awk -F',' '{print $2}')
 			new_line=$(echo ${old_line} | sed "s/${old_val}/${new_val}/g")
-			sed -i "s/${old_line}/${new_line}/g" ${csv_file}
-			echo updated pmt${pmt} ll${ll} with ${new_val}
+			read -p "Update pmt${pmt} ll${ll} with ${new_val}?  " choice
+                        if [[ ${choice:0:1} == "y" || ${choice:0:1} == "Y" ]] ; then
+                               sed -i "s/${old_line}/${new_line}/g" ${csv_file}
+                        fi
 		fi
 	done
 done
