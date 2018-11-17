@@ -173,6 +173,9 @@ for cur_id in ${run_list} ; do
 
 	# Grab the run parameters from the database
 	allitems=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT * FROM run_params WHERE run_id = '${cur_id}';")
+	if [ ${#allitems} -eq 0 ] ; then
+		continue
+	fi
 	set -- ${allitems}
 
 	# Insert a new row in the fit_results table and grab the fit_id

@@ -27,7 +27,7 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	}
 
 	// ped - mean of pedestal
-	Double_t ped0 		= getDataMinMax(rootFile, chan, 0, lowRangeThresh);
+	Double_t ped0 		= 244.0;
 	Double_t pedmin 	= off;
 	Double_t pedmax 	= off;
 
@@ -75,11 +75,9 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 		sigmax = sig0 * (1.0 + double(constrainGain) * 0.01);
 	}
 	// sigrms - rms of signal
-	Double_t sigrms0 	= 1.8;
+	Double_t sigrms0 	= getSignalRmsFromHV(pmt, hv);
 	Double_t sigrmsmin 	= off;
 	Double_t sigrmsmax 	= off;
-	if (hv < 1000 && pmt < 5) {sigrmsmax = 0.1;}
-	else if (hv < 1400 && pmt < 5) {sigrmsmax = 0.5;}
 	// inj - proportion of data that are injected pedestal
 	Double_t inj0 		= 0.5;
 	Double_t injmin		= 0.0;
@@ -106,10 +104,10 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	}
 
 	// Decide which PE peaks to consider 
-	int tempMinPE = 1, tempMaxPE = 20;
+	int tempMinPE = 1, tempMaxPE = 25;
 	if (mu0 > 50.0) {
-		tempMinPE = (int)(mu0 - 3.2 * sqrt(mu0));
-		tempMaxPE = (int)(mu0 + 4.4 * sqrt(mu0));
+		tempMinPE = (int)(mu0 - 2.0 * sqrt(mu0));
+		tempMaxPE = (int)(mu0 + 4.0 * sqrt(mu0));
 	} else if (mu0 > 10.0) {
 		tempMinPE = (int)(mu0 - 4.0 * sqrt(mu0));
 		tempMaxPE = (int)(mu0 + 6.0 * sqrt(mu0));

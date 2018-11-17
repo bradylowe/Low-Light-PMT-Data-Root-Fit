@@ -2,7 +2,7 @@
 ############################### Initialize input params, check for errors
 run_cond="TRUE"
 fit_cond="TRUE"
-id="run_id"
+id_type="run_id"
 table="run_params"
 outfile="selected_runs.txt"
 
@@ -28,9 +28,9 @@ for item in $* ; do
 	elif [[ ${name} == "fit_cond" ]] ; then
 		fit_cond="${fit_cond} AND ${val}"
 	# Return either run_ids or fit_ids
-	elif [[ ${name} == "id" ]] ; then
-		if [[ ${val} == "fit_id" ]] ; then
-			id=${val}
+	elif [[ ${name} == "type" ]] ; then
+		if [[ ${val} == "fit" ]] ; then
+			id_type=${val}
 			table="fit_results"
 			outfile="selected_fits.txt"
 		fi
@@ -74,7 +74,7 @@ done
 
 
 ############################# Query database, write results to output file
-if [[ ${id} == "run_id" ]] ; then
+if [[ ${id_type} == "run_id" ]] ; then
 	# Create the query from condition
 	query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
@@ -102,5 +102,5 @@ list=$(echo ${ret} | sed "s/\n/ /g")
 
 # Write the runs to file and report to user
 echo ${list} > ${outfile}
-echo "${count} ${id}s selected"
+echo "${count} ${id_type}s selected"
 

@@ -32,6 +32,7 @@ for pmt in ${pmt_list} ; do
 
 	# Loop through all hv's in hv list
 	for hv in ${hv_list} ; do
+		# Select the good fits
 		./sql_select_ids.sh id="fit_id" recent=1 good=1 hv=${hv} pmt=${pmt} >> /dev/null
 		out=$(./sql_average.sh sig_out)
 		new_val=${out#*:  (}

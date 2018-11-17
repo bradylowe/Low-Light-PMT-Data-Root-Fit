@@ -24,6 +24,7 @@ double myStod(string str) {
 	int index = str.find(".");
 	before = str.substr(0, index);
 	after = str.substr(index + 1);
+	if (after.length() > 5) after = after.substr(0, 5);
 	// Calculate return value
 	ret = (double)(myStoi(before));
 	ret += (double)(myStoi(after)) / pow(10.0, after.length());
@@ -232,6 +233,7 @@ void writeHistToFile(TH1F *hist, const char* rootFile, Int_t bins) {
 // This function takes in three numbers and reads a value from
 // a line in a file based on the inputs.
 Double_t getValueFromCSV(string filename, int head, int valueIndex = 1){
+printf("%s, %d, %d\n", filename.c_str(), head, valueIndex);
 	// Open the file
 	ifstream myfile;
 	myfile.open(filename);
@@ -244,6 +246,7 @@ Double_t getValueFromCSV(string filename, int head, int valueIndex = 1){
 	string line;
 	Int_t compare;
 	Int_t index;
+	Int_t end;
 	while (getline(myfile, line)) {
 		// Grab index of first comma, find correct line
 		index = line.find(",");
@@ -253,7 +256,9 @@ Double_t getValueFromCSV(string filename, int head, int valueIndex = 1){
 		for (int ii = 1; ii < valueIndex; ii++) 
 			index = line.find(",", index + 1);
 		// Return the value
-		return myStod(line.substr(index + 1));
+		end = line.find(",", index + 1);
+		if (end <= 0) return myStod(line.substr(index + 1));
+		else return myStod(line.substr(index + 1, end));
 	}
 	return 0.0;
 }
@@ -263,6 +268,10 @@ Double_t getValueFromCSV(string filename, int head, int valueIndex = 1){
 Double_t getSignalFromHV(Int_t pmt, Int_t hv) {
 	string filename = Form("calibration/pmt%d_gain.csv", pmt);
 	return getValueFromCSV(filename, hv);
+}
+Double_t getSignalRmsFromHV(Int_t pmt, Int_t hv) {
+	string filename = Form("calibration/pmt%d_gain.csv", pmt);
+	return getValueFromCSV(filename, hv, 2);
 }
 
 // This function takes in pmt number and light level setting and reads from file
@@ -407,9 +416,9 @@ Double_t the_real_deal_yx_bg(Double_t *x, Double_t *par){
 	Double_t gaus_is = exp(-pow(xx - par[1], 2) / 2.0 / pow(par[2], 2)) / par[2] / sqrt(twopi);
   
 	// If we are to the right of the pedestal, include the exponential.
-	if(xx >= par[1]){
+	//if(xx >= par[1]){
 	// Use this line to use noExpoPed fit model
-	//if(false){
+	if(false){
 		igne_is = par[3] * exp(-par[3] * (xx - par[1]));
 	} else {
 		igne_is = 0.;
