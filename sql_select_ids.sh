@@ -87,6 +87,9 @@ else
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Make result comma-separated list
 	list=$(echo ${ret} | sed "s/\n/ /g" | sed "s/ /,/g")
+	if [ ${#list} -eq 0 ] ; then
+		list=0
+	fi
 	query="USE gaindb; SELECT fit_id FROM fit_results WHERE run_id IN (${list}) AND ${fit_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Count the selected runs

@@ -116,6 +116,9 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - Example usage:
     * ./make_plot.sh hv gain 
 
+### *sql_calibrate_gain(ll).sh*
+ - This script finds the average measurement of many good fits and updates the calibration file.
+
 ---
 ---
 ---

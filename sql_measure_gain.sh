@@ -21,9 +21,9 @@ done
 for pmt in ${pmt_list} ; do
 	# Select hv_list
 	if [ ${pmt} -le 4 ] ; then
-		hv_list="2000 1975 1950 1925 1900"
+		hv_list="2000 1975 1950 1925 1900 1800 1700 1600"
 	else
-		hv_list="1300 1250 1200 1150 1100"
+		hv_list="1350 1300 1250 1200 1150 1100 1050 100"
 	fi
 	if [ ${#hv} -gt 0 ] ; then
 		hv_list=${hv}
