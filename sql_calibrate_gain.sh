@@ -39,7 +39,7 @@ for pmt in ${pmt_list} ; do
 		./sql_select_ids.sh fit recent=1 good=${good} hv=${hv} pmt=${pmt} >> /dev/null
 		# Grab the average signal size and average signal rms of the fits
 		out=$(./sql_average.sh sig_out)
-		rms_out=$(./sql_average.sh sig_rms_out)
+		out_rms=$(./sql_average.sh sig_rms_out)
 		new_val=${out#*:  (}
 		new_val=${new_val%,*}
 		new_rms=${out_rms#*:  (}
