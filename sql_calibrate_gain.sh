@@ -1,6 +1,7 @@
 
 # Initialize input parameters
 pmt_list=""
+good=1
 
 # Parse input
 for item in $* ; do
@@ -11,6 +12,8 @@ for item in $* ; do
 		pmt_list=${val}
 	elif [[ ${name} = "hv" ]] ; then
 		hv=${val}
+	elif [[ ${name} = "good" ]] ; then
+		good=${val}
 	fi
 done
 
@@ -33,24 +36,35 @@ for pmt in ${pmt_list} ; do
 	# Loop through all hv's in hv list
 	for hv in ${hv_list} ; do
 		# Select the good fits
-		./sql_select_ids.sh id="fit_id" recent=1 good=1 hv=${hv} pmt=${pmt} >> /dev/null
+		./sql_select_ids.sh fit recent=1 good=${good} hv=${hv} pmt=${pmt} >> /dev/null
+		# Grab the average signal size and average signal rms of the fits
 		out=$(./sql_average.sh sig_out)
+		rms_out=$(./sql_average.sh sig_rms_out)
 		new_val=${out#*:  (}
 		new_val=${new_val%,*}
+		new_rms=${out_rms#*:  (}
+		new_rms=${new_rms%,*}
 		check=$(echo ${new_val} | grep .)
+		check_rms=$(echo ${new_rms} | grep .)
+		# Absolute value
+		if [[ ${check_rms:0:1} == "-" ]] ; then
+			check_rms=${check_rms:1}
+		fi
+		# If values are good
 		if [[ ${check} != "no fits" && ${check:0:1} != "-" ]] ; then
-			# Check for existing value, store value if none exists
+			# Grab the existing line from the file with this high voltage
 			old_line=$(grep ${hv}, ${csv_file})
 			old_val=$(echo ${old_line} | awk -F',' '{print $2}')
+			new_line="${hv},${new_val},${new_rms},"
+			# Store new value if none exists
 			if [ ${#old_line} -eq 0 ] ; then
-				echo ${hv},${new_val} >> ${csv_file}
-			fi
-			# Create new line from old line using new value
-			new_line=$(echo ${old_line} | sed "s/${old_val}/${new_val}/g")
-			# Check with the user before changing the file
-			read -p "Update pmt${pmt} hv${hv} with ${out}?  " choice
-			if [[ ${choice:0:1} == "y" || ${choice:0:1} == "Y" ]] ; then
-				sed -i "s/${old_line}/${new_line}/g" ${csv_file}
+				echo ${new_line} >> ${csv_file}
+			else
+				# Check with the user before changing the file
+				read -p "Overwrite ${old_line} with ${out}?  " choice
+				if [[ ${choice:0:1} == "y" || ${choice:0:1} == "Y" ]] ; then
+					sed -i "s/${old_line}/${new_line}/g" ${csv_file}
+				fi
 			fi
 		fi
 	done

@@ -193,7 +193,7 @@ for cur_id in ${run_list} ; do
 		rootOptions="-l"
 	fi
 	# Fit the data, grab chi squared per ndf
-	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo})")
+	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $6, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo})")
 	chi2=$(echo ${chi2} | awk -F' ' '{print $NF}')
 	
 	# Process the human-viewable output pngs
@@ -226,10 +226,10 @@ for cur_id in ${run_list} ; do
 	if [ -f ${sqlfile} -a ${noSQL} -eq 0 ] ; then
 		# Move the images to the storage directories
 		if [ ${savePNG} -gt 0 ] ; then
-			mv fit_pmt__fitID${fitID}_*.png ${im_dir}/png_fit/.
+			mv ${bothpng} ${im_dir}/png_fit/.
 		fi
 		if [ ${saveNN} -gt 0 ] ; then
-			mv fit_pmt_nn__fitID${fitID}_*.png ${im_dir}/png_fit_nn/.
+			mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/.
 		fi
 		# Initialize the update query
 		query="USE gaindb; UPDATE fit_results SET $(head -n 1 ${sqlfile})"

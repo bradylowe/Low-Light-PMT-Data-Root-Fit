@@ -260,32 +260,55 @@ printf("%s, %d, %d\n", filename.c_str(), head, valueIndex);
 		if (end <= 0) return myStod(line.substr(index + 1));
 		else return myStod(line.substr(index + 1, end));
 	}
-	return 0.0;
+	return -1.0;
 }
 
 // This function takes in pmt number and high voltage setting and reads from file
 // the corresponding initial guess for the signal size of 1-PE for that pmt/hv.
 Double_t getSignalFromHV(Int_t pmt, Int_t hv) {
 	string filename = Form("calibration/pmt%d_gain.csv", pmt);
-	return getValueFromCSV(filename, hv);
+	double ret = getValueFromCSV(filename, hv);
+	if (ret < 0) return 4.0;
+	else return ret;
 }
 Double_t getSignalRmsFromHV(Int_t pmt, Int_t hv) {
 	string filename = Form("calibration/pmt%d_gain.csv", pmt);
-	return getValueFromCSV(filename, hv, 2);
+	double ret = getValueFromCSV(filename, hv, 2);
+	if (ret < 0) return 1.0;
+	else return ret;
 }
 
 // This function takes in pmt number and light level setting and reads from file
 // the corresponding initial guess of mu for that pmt/ll.
 Double_t getMuFromLL(Int_t pmt, Int_t ll) {
 	string filename = Form("calibration/pmt%d_ll.csv", pmt);
-	return getValueFromCSV(filename, ll);
+	double ret = getValueFromCSV(filename, ll);
+	if (ret < 0) return 1.0;
+	else return ret;
 }
 
 // This function takes in pmt number and light level setting and reads from file
 // the corresponding initial guess of mu for that pmt/ll.
 Double_t getTransparencyFromFilter(Int_t filter) {
 	string filename = "calibration/filters.csv";
-	return getValueFromCSV(filename, filter);
+	double ret = getValueFromCSV(filename, filter);
+	if (ret < 0) return 1.0;
+	else return ret;
+}
+
+// This function takes in pmt number and gate length and reads from file
+// the corresponding initial guess of pedestal mean and sigma.
+Double_t getPedestalFromGate(Int_t pmt, Int_t gate) {
+	string filename = Form("calibration/pmt%d_pedestals.csv", pmt);
+	double ret = getValueFromCSV(filename, gate);
+	if (ret < 0) return 244.0;
+	else return ret;
+}
+Double_t getPedRmsFromGate(Int_t pmt, Int_t gate) {
+	string filename = Form("calibration/pmt%d_pedestals.csv", pmt);
+	double ret = getValueFromCSV(filename, gate, 2);
+	if (ret < 0) return 1.5;
+	else return ret;
 }
 
 // This function takes in a filename to a .hist file as well as a list of parameters and

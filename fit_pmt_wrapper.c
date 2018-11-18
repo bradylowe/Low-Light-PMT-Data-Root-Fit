@@ -10,7 +10,7 @@ Double_t channelsToGain = 25.0 / 160.2; // (25 fC / chan) / (160.2 fC / electron
 // All inputs into fit_pmt.c should be implemented in this function. This function should provide full
 // functionality of fit_pmt.c while also allowing the user to diagnose and test values as well as record
 // and keep track of previous fits to data files.
-Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
+Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, Int_t daq, Int_t pedRate, Int_t dataRate, Int_t chan, Int_t gate, Int_t pmt, Int_t base, Int_t hv, Int_t ll, Int_t filter, Int_t lowRangeThresh = 15, Int_t highRangeThresh = 15, Int_t constrainInj = 100, Int_t constrainGain = -1, Int_t constrainLL = -1, Int_t saveResults = 0, Int_t saveNN = 0, Int_t fitEngine = 0, Int_t noExpo = 0){
 
 	// Define "off" value
 	Double_t off = -1.0;
@@ -27,12 +27,12 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	}
 
 	// ped - mean of pedestal
-	Double_t ped0 		= 244.0;
+	Double_t ped0 		= getPedestalFromGate(pmt, gate);
 	Double_t pedmin 	= off;
 	Double_t pedmax 	= off;
 
 	// pedrms - rms of pedestal
-	Double_t pedrms0 	= 1.5;
+	Double_t pedrms0 	= getPedRmsFromGate(pmt, gate);
 	Double_t pedrmsmin 	= off;
 	Double_t pedrmsmax 	= off;
 

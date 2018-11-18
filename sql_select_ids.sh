@@ -28,12 +28,10 @@ for item in $* ; do
 	elif [[ ${name} == "fit_cond" ]] ; then
 		fit_cond="${fit_cond} AND ${val}"
 	# Return either run_ids or fit_ids
-	elif [[ ${name} == "type" ]] ; then
-		if [[ ${val} == "fit" ]] ; then
-			id_type=${val}
-			table="fit_results"
-			outfile="selected_fits.txt"
-		fi
+	elif [[ ${name} == "fit" || ${name} == "fits" ]] ; then
+		id_type="fit_id"
+		table="fit_results"
+		outfile="selected_fits.txt"
 	# Only grab good fits
 	elif [[ ${name} == "good" ]] ; then
 		if [ ${val} -eq 1 ] ; then
