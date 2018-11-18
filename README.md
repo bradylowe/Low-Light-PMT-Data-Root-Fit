@@ -8,7 +8,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 *Quick start:*
  - First, open setup.txt and set the correct values for directories
- - Next, run ./sql_select_runs.sh run_cond="hv=2000 AND pmt=1"
+ - Next, run ./sql_select_runs.sh run_cond="hv=2000&&pmt=1"
  - Then, run ./run_fit_pmt.sh
  - To view the results of what you just ran (up to 20 fits), execute:
     * mysql -u user -p -e "USE gaindb; SELECT fit_id, gain, chi FROM fit_results ORDER BY fit_id DESC LIMIT 20;"
@@ -39,9 +39,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This script takes in an optional 15 input parameters that do not need to 
     be in any certain order. 
  - The input param list:  
-    * gain (initial guess)
     * conGain (constrain gain param to some percent of best guess)
-    * ll (initial light level guess)
     * conLL (constrain ll)
     * pedInj (initial pedestal injection rate guess)
     * conInj (constrain)
@@ -50,18 +48,17 @@ This repository houses code for modeling the response of photomultiplier tubes a
     * tile (for custom montage tiling)
     * savePNG (boolean for saving human style png)
     * saveNN (boolean for saving neural network output png)
-    * runs (list of run id's to fit)
     * run_id (single run id to fit)
  - If the user sends in either a "rootFile" or a single "run_id", then the script will allow Root to remain open for the user to interact with. Otherwise, Root will be ran in batch mode and only saved output will remain.
  - After the root macro has performed the fit and saved its output pngs and SQL query textfile, this script may use the png in creating a montage, then it will put the png in its correct directory or delete it, and then the script will grab the SQL query from the text file and submit it to save the fit output to the gaindb database.
- - Example usage: ./run_fit_pmt.sh fitEngine=1 printSum=true ll=47 conGain=90 savePNG=true pngFile="nice_montage.png" runs="17 29 49 50 51"
+ - Example usage: ./run_fit_pmt.sh conGain=20 conLL=10 noExpo=1 
 
 ### *fit_high_light.c*
  - This macro assumes a gaussian pedestal and a gaus+exp tail.
  - It returns the separation between the two distribution means.
 
 ### *run_fit_high_light.sh*
- - This script executes the high light fit macro on all selected_runs.txt.
+ - This script executes the high light fit macro on all selected_runs.csv.
  - It takes an optional parameter of scale=1 which switches fit to high-range scale.
  - The results of the fit are written to ped_results.txt
 
@@ -69,7 +66,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This macro assumes a sum of three gaussians as the distribution.
 
 ### *run_fit_pedestal.sh*
- - This script fits selected_runs.txt to the pedestal fit.
+ - This script fits selected_runs.csv to the pedestal fit.
 
 ### *run_batch.sh*
  -  This script runs the run_fit_pmt.sh script on a predefined list of run_id's with predefined input arguments. 
@@ -81,54 +78,55 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 ### *sql_select_ids.sh*
  - This script takes in a conditional statement run_cond and/or fit_cond to select run_ids or fit_ids from the sql table.
- - This file writes the selected run_ids (fit_ids) to the selected_runs.txt (selected_fits.txt).
- - The type of id is selected with the "id" variable.
- - Example usage:   ./sql_select_ids.sh id="fit_id" run_cond="hv=2000 AND ll<90" fit_cond="chi<2"
+ - This file writes the selected run_ids by default to the selected_runs.csv.
+ - If you send in the word "fit" as a parameter, fit_ids will be stored instead into selected_fits.csv.
+ - Example usage:   ./sql_select_ids.sh fit run_cond="hv=2000&&ll<90" fit_cond="chi<2"
  - Here is a list of possible input parameters as well as possible values:
-    * id="fit_id"
-    * good=0
+    * good=1
     * recent=1
     * hvhl=1
-    * fit_cond="chi<2 AND mu_out < 5.5"
-    * run_cond="hv>1700 AND hv<2000 AND gate=100"
+    * fit_cond="chi<2&&mu_out<5.5"
+    * run_cond="hv>1700&&hv<2000&&gate=100"
 
 ### *sql_remove_fits.sh*
- - This script removes all the fits in selected_fits.txt
+ - This script removes all the fits in selected_fits.csv
     * The row is removed from the SQL table.
     * Any associated images are deleted from file.
 
 ### *sql_view_fits.sh*
- - This script opens eog file viewer with all filenames corresponding to selected_fits.txt
+ - This script opens eog file viewer with all filenames corresponding to selected_fits.csv
 
 ### *sql_average.sh*
- - This script takes in an argument which is a column in the fit_results table and finds the average and standard dev of the column for the runs in selected_runs.txt.
+ - This script takes in an argument which is a column in the fit_results table and finds the average and standard dev of the column for the runs in selected_runs.csv.
 
 ### *sql_ave_errors.sh*
  - This script is just like the above, but it also grabs the errors column and returns it.
 
 ### *sql_make_plot.sh*
- - This script executes make_plot.c after grabbing values corresponding to selected_fits.txt
+ - This script executes make_plot.c after grabbing values corresponding to selected_fits.csv
  - This script takes 2 parameters
     * x - independent variable
     * y - dependent variable
  - The two parameters can be any numeric column value from either the run_params table OR the fit_results table. For a list of possibilities, execute:
-    * ./make_plot.sh help
+    * ./sql_make_plot.sh help
  - Example usage:
-    * ./make_plot.sh hv gain 
+    * ./sql_make_plot.sh hv gain 
 
 ### *sql_calibrate_gain(ll).sh*
- - This script finds the average measurement of many good fits and updates the calibration file.
+ - This script finds the average measurement of any available good fits and updates the calibration file.
 
 ---
 ---
 ---
 
 ### *Other setup files:*
- - pmtN_gain.txt
+ - pmtN_gain.csv
     * This collection of files stores pmt gain signal size calibrations for measured high voltages.
- - pmtN_ll.txt
+ - pmtN_ll.csv
     * This collection of files stores light level calibrations for a given pmt.
- - filters.txt
+ - pmtN_pedestals.csv
+    * This stores pedestal values for a given gate value (assuming iped=40)
+ - filters.csv
     * This file stores the transparencies of our filters.
 
 ### *histograms:*
@@ -160,7 +158,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This command should create the gaindb database and populate it with values. (If this is not the case, you must first define the gaindb database on your system and give your user all permissions over the database, described [here](https://dev.mysql.com/doc/refman/8.0/en/creating-database.html)).
 
 ### *pedestalFit.sh* 
- - This script needs sql_select_runs.sh to be ran before so that selected_runs.txt exists.
+ - This script needs sql_select_runs.sh to be ran before so that selected_runs.csv exists.
  - This script executes a fit to the V965 pedestal (zero signal) events defined in pedestalFit.c.
  - This script will execute one fit at a time and wait for you to exit to show the next run.
 

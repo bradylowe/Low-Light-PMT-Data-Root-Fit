@@ -136,12 +136,12 @@ if [ ${#rootFile} -gt 0 -a ${#run_id} -eq 0 ] ; then
 fi
 
 ################################################################################
-# If the user doesn't send in a root file, read the numbers in selected_runs.txt
-# You can set the values in selected_runs.txt via the script sql_select_data.sh
+# If the user doesn't send in a root file, read the numbers in selected_runs.csv
+# You can set the values in selected_runs.csv via the script sql_select_data.sh
 ################################################################################
 
-# Check for a list  of runs from user input or stored in selected_runs.txt
-if [ ! -f selected_runs.txt -a ${#runs} -eq 0 -a ${#run_id} -eq 0 ] ; then
+# Check for a list  of runs from user input or stored in selected_runs.csv
+if [ ! -f selected_runs.csv -a ${#runs} -eq 0 -a ${#run_id} -eq 0 ] ; then
 	echo "No files to process. Exiting..."
 	exit
 fi
@@ -152,9 +152,9 @@ if [ ${#run_id} -gt 0 ] ; then
 # If not executing single run, grab list of run_id's from user
 elif [ ${#runs} -gt 0 ] ; then
 	run_list=${runs}
-# If no list of runs from user input, we must be using the selected_runs.txt file
+# If no list of runs from user input, we must be using the selected_runs.csv file
 else
-	run_list=$(head -n 1 selected_runs.txt)
+	run_list=$(head -n 1 selected_runs.csv | sed "s/,/ /g")
 fi
 
 

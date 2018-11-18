@@ -5,7 +5,7 @@ im_dir="$(grep im_dir setup.txt | awk -F'=' '{print $2}')"
 if [ $# -eq 1 ] ; then
 	output=$1
 else
-	output=$(head selected_fits.txt | sed "s/ /,/g")
+	output=$(head selected_fits.csv)
 fi
 
 # Qeury for filename and append path

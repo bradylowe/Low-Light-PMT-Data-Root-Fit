@@ -7,7 +7,7 @@ else
 fi
 
 # Grab selected fits and put commas in there
-list=$(head selected_fits.txt | sed "s/ /,/g")
+list=$(head selected_fits.csv)
 if [ ${#list} -eq 0 ] ; then
 	echo no fits
 	exit

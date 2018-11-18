@@ -8,7 +8,7 @@ else
 	scale=0
 fi
 
-files=$(head selected_runs.txt)
+files=$(head selected_runs.csv | sed "s/,/ /g")
 
 for id in ${files} ; do
 	filename=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT rootfile FROM run_params WHERE run_id=${id};")

@@ -4,7 +4,7 @@ run_cond="TRUE"
 fit_cond="TRUE"
 id_type="run_id"
 table="run_params"
-outfile="selected_runs.txt"
+outfile="selected_runs.csv"
 
 hlhv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv >= 1800"
 hllv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv < 1800"
@@ -31,7 +31,7 @@ for item in $* ; do
 	elif [[ ${name} == "fit" || ${name} == "fits" ]] ; then
 		id_type="fit_id"
 		table="fit_results"
-		outfile="selected_fits.txt"
+		outfile="selected_fits.csv"
 	# Only grab good fits
 	elif [[ ${name} == "good" ]] ; then
 		if [ ${val} -eq 1 ] ; then

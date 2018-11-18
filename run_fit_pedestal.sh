@@ -1,6 +1,6 @@
 
 data_dir=$(grep data_dir setup.txt | awk -F'=' '{print $2}')
-runs=$(head selected_runs.txt)
+runs=$(head selected_runs.csv | sed "s/,/ /g")
 
 if [ $# -eq 1 ] ; then
 	runs=$1

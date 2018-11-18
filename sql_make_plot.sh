@@ -38,7 +38,7 @@ else
 fi
 
 # Get list of fit ID's
-fits=$(head -n 1 selected_fits.txt)
+fits=$(head -n 1 selected_fits.csv | sed "s/,/ /g")
 
 rm x_file.txt ; touch x_file.txt
 rm y_file.txt ; touch y_file.txt

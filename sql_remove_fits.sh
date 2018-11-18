@@ -3,7 +3,7 @@
 im_dir="$(grep im_dir setup.txt | awk -F'=' '{print $2}')"
 
 # Grab fits from file
-fits=$(head selected_fits.txt)
+fits=$(head selected_fits.csv | sed "s/,/ /g")
 
 # Delete pngs, remove row in sql table
 for id in ${fits} ; do
