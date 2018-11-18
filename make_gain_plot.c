@@ -78,5 +78,6 @@ void make_gain_plot(Int_t files = -1) {
 	Int_t high = 2000;
 	gStyle->SetOptFit(1);
 	TF1 *fit_func = new TF1("fit_func", "expo", low, high);
+	fit_func->SetParameter(0, 1e-6);
 	gr1->Fit(fit_func, "RS", "", low, high);
 }

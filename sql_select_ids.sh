@@ -13,6 +13,7 @@ lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < 18
 
 good_runs="ll>0 AND nevents>=500000"
 good_fits="chi>=0 AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
+better_fits="chi>=0 AND chi<2 AND gain>0 AND gain<1.5 AND gain_percent_error<3 AND mu_out>mu_out_error AND gain_percent_error>0"
 
 recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
 
@@ -37,6 +38,12 @@ for item in $* ; do
 		if [ ${val} -eq 1 ] ; then
 			run_cond="${run_cond} AND ${good_runs}"
 			fit_cond="${fit_cond} AND ${good_fits}"
+		fi
+	# Only grab really good fits
+	elif [[ ${name} == "better" ]] ; then
+		if [ ${val} -eq 1 ] ; then
+			run_cond="${run_cond} AND ${good_runs}"
+			fit_cond="${fit_cond} AND ${better_fits}"
 		fi
 	# Only grab recent fits
 	elif [[ ${name} == "recent" ]] ; then
@@ -95,8 +102,9 @@ else
 	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 fi
 
-# Make result space-separated list
+# Make result comma-separated list
 list=$(echo ${ret} | sed "s/\n/ /g")
+list=$(echo ${ret} | sed "s/ /,/g")
 
 # Write the runs to file and report to user
 echo ${list} > ${outfile}

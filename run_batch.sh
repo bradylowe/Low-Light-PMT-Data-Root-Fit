@@ -58,6 +58,12 @@ for pmt in ${pmt_list} ; do
 		./run_fit_pmt.sh conGain=20 conLL=2
 		./sql_select_ids.sh lllv=1 pmt=${pmt} good=1 recent=1 
 		./run_fit_pmt.sh conGain=20 conLL=2 noExpo=1
+		if [ ${extra_fits} -eq 1 ] ; then
+			./sql_select_ids.sh lllv=1 pmt=${pmt} good=1 recent=1 
+			./run_fit_pmt.sh conGain=20 conLL=0
+			./sql_select_ids.sh lllv=1 pmt=${pmt} good=1 recent=1 
+			./run_fit_pmt.sh conGain=20 conLL=0 noExpo=1
+		fi
 	fi
 
 	# HIGH-light HIGH-voltage (used to measure light level)
@@ -67,6 +73,12 @@ for pmt in ${pmt_list} ; do
 		./run_fit_pmt.sh conGain=1 conLL=20
 		./sql_select_ids.sh hlhv=1 pmt=${pmt} good=1 recent=1
 		./run_fit_pmt.sh conGain=1 conLL=20 noExpo=1
+		if [ ${extra_fits} -eq 1 ] ; then
+			./sql_select_ids.sh hlhv=1 pmt=${pmt} good=1 recent=1
+			./run_fit_pmt.sh conGain=0 conLL=20 noExpo=1
+			./sql_select_ids.sh hlhv=1 pmt=${pmt} good=1 recent=1
+			./run_fit_pmt.sh conGain=20 conLL=2 noExpo=1
+		fi
 	fi
 
 	# HIGH-light LOW-voltage (used to measure gain)
@@ -76,6 +88,12 @@ for pmt in ${pmt_list} ; do
 		./run_fit_pmt.sh conGain=20 conLL=1
 		./sql_select_ids.sh hllv=1 pmt=${pmt} good=1 recent=1
 		./run_fit_pmt.sh conGain=20 conLL=1 noExpo=1
+		if [ ${extra_fits} -eq 1 ] ; then
+			./sql_select_ids.sh hllv=1 pmt=${pmt} good=1 recent=1
+			./run_fit_pmt.sh conGain=20 conLL=0
+			./sql_select_ids.sh hllv=1 pmt=${pmt} good=1 recent=1
+			./run_fit_pmt.sh conGain=20 conLL=0 noExpo=1
+		fi
 	fi
 
 done

@@ -2,6 +2,7 @@
 # Initialize input parameters
 pmt_list=""
 good=1
+ll_list="20 30 40 50 90 100"
 
 # Parse input
 for item in $* ; do
@@ -11,7 +12,7 @@ for item in $* ; do
 	if [[ ${name} == "pmt" ]] ; then
 		pmt_list=${val}
 	elif [[ ${name} = "ll" ]] ; then
-		ll=${val}
+		ll_list=${val}
 	elif [[ ${name} = "good" ]] ; then
 		good=${val}
 	fi
@@ -22,12 +23,6 @@ for pmt in ${pmt_list} ; do
 
 	# Pick the right calibration file
 	csv_file="calibration/pmt${pmt}_ll.csv"
-	
-	# Select ll_list
-	ll_list="20 30 40 50 90 100"
-	if [ ${#ll} -gt 0 ] ; then
-		ll_list=${ll}
-	fi
 
 	# Loop through all ll's in ll list
 	for ll in ${ll_list} ; do
@@ -42,7 +37,7 @@ for pmt in ${pmt_list} ; do
 		# If values are good
 		if [[ ${check} != "no fits" && ${check:0:1} != "-" ]] ; then
 			# Grab the existing line from the file with this high voltage
-			old_line=$(grep ${ll}, ${csv_file})
+			old_line=$(grep ${ll}, ${csv_file} | head -n 1)
 			old_val=$(echo ${old_line} | awk -F',' '{print $2}')
 			new_line="${ll},${new_val},"
 			# Store new value if none exists

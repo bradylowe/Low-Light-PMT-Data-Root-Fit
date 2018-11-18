@@ -25,9 +25,9 @@ for pmt in ${pmt_list} ; do
 	
 	# Select hv_list
 	if [ ${pmt} -le 4 ] ; then
-		hv_list="2000 1975 1950 1925 1900 1800 1700 1600"
+		hv_list="2000 1975 1950 1925 1900 1800 1700 1600 1500 1400 1300 1200 1100 1000 900 800 700"
 	else
-		hv_list="1350 1300 1250 1200 1150 1100 1050 1000"
+		hv_list="1350 1300 1250 1200 1150 1100 1050 1000 900 800 700 600 500"
 	fi
 	if [ ${#hv} -gt 0 ] ; then
 		hv_list=${hv}
@@ -53,7 +53,7 @@ for pmt in ${pmt_list} ; do
 		# If values are good
 		if [[ ${check} != "no fits" && ${check:0:1} != "-" ]] ; then
 			# Grab the existing line from the file with this high voltage
-			old_line=$(grep ${hv}, ${csv_file})
+			old_line=$(grep ${hv}, ${csv_file} | head -n 1)
 			old_val=$(echo ${old_line} | awk -F',' '{print $2}')
 			new_line="${hv},${new_val},${new_rms},"
 			# Store new value if none exists
