@@ -1,7 +1,9 @@
 
 # Initialize input parameters
 pmt_list=""
-quality=2
+quality=4
+llhv=0
+hllv=0
 
 # Parse input
 for item in $* ; do
@@ -36,7 +38,24 @@ for pmt in ${pmt_list} ; do
 	# Loop through all hv's in hv list
 	for hv in ${hv_list} ; do
 		# Select the good fits
-		./sql_select_ids.sh fit recent=1 quality=${quality} hv=${hv} pmt=${pmt} >> /dev/null
+		if [ ${pmt} -lt 5 ] ; then
+			if [ ${hv} -lt 1800 ] ; then
+				llhv=0
+				hllv=1
+			else
+				llhv=1
+				hllv=0
+			fi
+		else
+			if [ ${hv} -lt 1100 ] ; then
+				llhv=0
+				hllv=1
+			else
+				llhv=1
+				hllv=0
+			fi
+		fi
+		./sql_select_ids.sh fit recent=1 quality=${quality} hv=${hv} pmt=${pmt} llhv=${llhv} hllv=${hllv} >> /dev/null
 		# Grab the average signal size and average signal rms of the fits
 		out=$(./sql_average.sh sig_out)
 		out_rms=$(./sql_average.sh sig_rms_out)

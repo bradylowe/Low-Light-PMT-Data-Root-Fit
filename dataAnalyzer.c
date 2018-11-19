@@ -296,21 +296,6 @@ Double_t getTransparencyFromFilter(Int_t filter) {
 	else return ret;
 }
 
-// This function takes in pmt number and gate length and reads from file
-// the corresponding initial guess of pedestal mean and sigma.
-Double_t getPedestalFromGate(Int_t pmt, Int_t gate) {
-	string filename = Form("calibration/pmt%d_pedestals.csv", pmt);
-	double ret = getValueFromCSV(filename, gate);
-	if (ret < 0) return 244.0;
-	else return ret;
-}
-Double_t getPedRmsFromGate(Int_t pmt, Int_t gate) {
-	string filename = Form("calibration/pmt%d_pedestals.csv", pmt);
-	double ret = getValueFromCSV(filename, gate, 2);
-	if (ret < 0) return 1.5;
-	else return ret;
-}
-
 // This function takes in a filename to a .hist file as well as a list of parameters and
 // creates a PNG of the fit function described in the parameter vector as well as the data
 // points described in the .hist file.

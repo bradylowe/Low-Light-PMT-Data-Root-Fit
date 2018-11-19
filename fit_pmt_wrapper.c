@@ -1,4 +1,5 @@
 #include "fit_pmt.c"
+#include "fit_pedestal.c"
 using namespace std;
 
 // ADC factor (THERE IS A FACTOR OF 10^6 FLOATING AROUND INVISIBLY HERE)
@@ -27,12 +28,12 @@ Int_t fit_pmt_wrapper(string rootFile, Int_t runID, Int_t fitID, Int_t runNum, I
 	}
 
 	// ped - mean of pedestal
-	Double_t ped0 		= getPedestalFromGate(pmt, gate);
+	Double_t ped0 		= fit_pedestal(rootFile);
 	Double_t pedmin 	= off;
 	Double_t pedmax 	= off;
 
 	// pedrms - rms of pedestal
-	Double_t pedrms0 	= getPedRmsFromGate(pmt, gate);
+	Double_t pedrms0 	= fit_pedestal(rootFile, 2);
 	Double_t pedrmsmin 	= off;
 	Double_t pedrmsmax 	= off;
 

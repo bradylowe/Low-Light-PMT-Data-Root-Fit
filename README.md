@@ -131,8 +131,6 @@ This repository houses code for modeling the response of photomultiplier tubes a
     * This collection of files stores pmt gain signal size calibrations for measured high voltages.
  - pmtN_ll.csv
     * This collection of files stores light level calibrations for a given pmt.
- - pmtN_pedestals.csv
-    * This stores pedestal values for a given gate value (assuming iped=40)
  - filters.csv
     * This file stores the transparencies of our filters.
 

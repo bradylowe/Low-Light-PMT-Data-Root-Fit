@@ -7,10 +7,12 @@ table="run_params"
 outfile="selected_runs.csv"
 
 # Define high voltage/light level regimes
-hlhv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv >= 1800"
-hllv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv < 1800"
-llhv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv >= 1800"
-lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < 1800"
+limit=1800  # 2" PMTs
+#limit=1100 # 3" PMTs
+hlhv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv >= ${limit}"
+hllv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv < ${limit}"
+llhv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv >= ${limit}"
+lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < ${limit}"
 
 # Define quality of fits on a scale from 1 (bad) to 5 (good)
 good_runs="ll>0 AND nevents>=500000"
@@ -18,7 +20,7 @@ sloppy_fits="chi>=0 AND chi<10000 AND gain>0 AND gain<1.5 AND gain_percent_error
 ok_fits="chi>=0 AND chi<50 AND gain>0 AND gain<1.5 AND gain_percent_error<50 AND mu_out>mu_out_error AND gain_percent_error>0"
 good_fits="chi>=0 AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
 better_fits="chi>=0 AND chi<2 AND gain>0 AND gain<1.5 AND gain_percent_error<3 AND mu_out>mu_out_error AND gain_percent_error>0"
-best_fits="chi>=0 AND chi<1000 AND gain>0 AND gain<1.5 AND gain_percent_error<100 AND mu_out>mu_out_error AND gain_percent_error>0 ORDER BY chi DESC, gain_percent_error DESC, mu_out_error DESC LIMIT 1"
+best_fits="${sloppy_fits} ORDER BY chi DESC, gain_percent_error DESC, mu_out_error DESC LIMIT 1"
 
 recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
 
@@ -78,7 +80,7 @@ for item in $* ; do
 			run_cond="${run_cond} AND ${lllv}"
 		fi
 	# Grab high voltage and light level
-	elif [[ ${name} == "hv" || ${name} == "ll" || ${name} == "pmt" ]] ; then
+	elif [[ ${name} == "hv" || ${name} == "ll" || ${name} == "pmt" || ${name} == "filter" ]] ; then
 		run_cond="${run_cond} AND ${item}"
 	fi
 done
