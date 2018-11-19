@@ -2,7 +2,7 @@
 # Initialize input parameters
 pmt_list=""
 ok=0
-good=1
+good=0
 better=0
 
 # Parse input
