@@ -1,7 +1,9 @@
 
 # Initialize input parameters
 pmt_list=""
+ok=0
 good=1
+better=0
 
 # Parse input
 for item in $* ; do
@@ -12,8 +14,12 @@ for item in $* ; do
 		pmt_list=${val}
 	elif [[ ${name} = "hv" ]] ; then
 		hv=${val}
+	elif [[ ${name} = "ok" ]] ; then
+		ok=${val}
 	elif [[ ${name} = "good" ]] ; then
 		good=${val}
+	elif [[ ${name} = "better" ]] ; then
+		better=${val}
 	fi
 done
 
@@ -36,7 +42,7 @@ for pmt in ${pmt_list} ; do
 	# Loop through all hv's in hv list
 	for hv in ${hv_list} ; do
 		# Select the good fits
-		./sql_select_ids.sh fit recent=1 good=${good} hv=${hv} pmt=${pmt} >> /dev/null
+		./sql_select_ids.sh fit recent=1 good=${good} ok=${ok} better=${better} hv=${hv} pmt=${pmt} >> /dev/null
 		# Grab the average signal size and average signal rms of the fits
 		out=$(./sql_average.sh sig_out)
 		out_rms=$(./sql_average.sh sig_rms_out)

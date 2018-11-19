@@ -6,12 +6,16 @@ id_type="run_id"
 table="run_params"
 outfile="selected_runs.csv"
 
+# Define high voltage/light level regimes
 hlhv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv >= 1800"
 hllv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv < 1800"
 llhv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv >= 1800"
 lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < 1800"
 
+# Define fits on a scale of good and bad
 good_runs="ll>0 AND nevents>=500000"
+
+ok_fits="chi>=0 AND chi<1000 AND gain>0 AND gain<1.5 AND gain_percent_error<100 AND mu_out>mu_out_error AND gain_percent_error>0"
 good_fits="chi>=0 AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
 better_fits="chi>=0 AND chi<2 AND gain>0 AND gain<1.5 AND gain_percent_error<3 AND mu_out>mu_out_error AND gain_percent_error>0"
 
@@ -33,6 +37,12 @@ for item in $* ; do
 		id_type="fit_id"
 		table="fit_results"
 		outfile="selected_fits.csv"
+	# Grab all fits that aren't garbage
+	elif [[ ${name} == "ok" ]] ; then
+		if [ ${val} -eq 1 ] ; then
+			run_cond="${run_cond} AND ${good_runs}"
+			fit_cond="${fit_cond} AND ${ok_fits}"
+		fi
 	# Only grab good fits
 	elif [[ ${name} == "good" ]] ; then
 		if [ ${val} -eq 1 ] ; then

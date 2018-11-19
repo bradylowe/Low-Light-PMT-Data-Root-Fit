@@ -81,7 +81,7 @@ int fit_pmt(
 	const int nPE = maxPE - minPE + 1;
 	if ( minPE < 1 || nPE < 0 ) {
 		printf("ERROR\n");
-		return -1;
+		return -4;
 	} 
 	Float_t MIN_PE = (float)(minPE);
 	Float_t MAX_PE = (float)(maxPE);
@@ -100,7 +100,7 @@ int fit_pmt(
         TFile* f1 = new TFile(rootFile.c_str());
         if ( f1->IsZombie() ) {
                 printf("ERROR ==> Couldn't open file %s\n", rootFile.c_str());
-                return -1;
+                return -5;
         }
 
 	// Define info file for use later 
@@ -111,7 +111,7 @@ int fit_pmt(
         TTree* t1 = (TTree*) f1->Get("ntuple");
         if (t1 == NULL) {
                 printf("ERROR ==> Couldn't find \"ntuple\"\n");
-                return -1;
+                return -6;
         }
 
         // Get number of events
@@ -145,6 +145,9 @@ int fit_pmt(
 	//  - lowest bin will have at least lowRangeThresh items in it.
 	Int_t low = h_QDC->FindFirstBinAbove(lowRangeThresh);
 	Int_t high = h_QDC->FindLastBinAbove(highRangeThresh);
+
+	// If we are overflowing, just don't even run the fit
+	if (high >= 4090) return -3.0; 
 
         // Normalize integral of histogram to 1 (same scaling for error bar)
         Int_t sum = h_QDC->GetSum();
@@ -381,6 +384,8 @@ int fit_pmt(
 
 
 	// Return chi squared per number of degrees of freedom (floored)
+	if (chiPerNDF < 0.0) chiPerNDF = -1.0;
+	else if (chiPerNDF > 1e7) chiPerNDF = -2.0;
 	return (int)(chiPerNDF);
 }
 

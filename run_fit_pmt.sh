@@ -249,7 +249,10 @@ for cur_id in ${run_list} ; do
 		if [ ${#label} -gt 0 ] ; then
 			mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; UPDATE fit_results SET label=${label} WHERE fit_id=${fitID};"
 		fi
-		
+	# If error, write error value to fit_results table in chi column
+	elif [ ${chi2} -lt 0 ] ; then
+		query="USE gaindb; UPDATE fit_results SET chi=${chi2} WHERE fit_id=${fitID};"
+		res=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	fi
 
 	# Make sure to break from loop if only one run_id

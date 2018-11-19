@@ -29,6 +29,13 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This macro takes in around 50 input parameters which gives the user immense control over the parameter-space search, and also allows for highly detailed recording of past search attempts and results.
  - The algorithm in this macro was defined in a NIM publication in 1992 and written in Root by YuXiang Zhao, then passed onto Dustin McNulty, and then finally to me. I have made many changes, but very few to the underlying mathematics.
  - This macro outputs pngs for humans to view as well as neural networks. This allows for creating and studying of all data as well as applying machine learning to the same task. This macro also outptus an SQL query into a text file which a shell script (run_fit_pmt.sh) uses to store fit input and output in an SQL database.
+ - Error outputs (function return values):
+    * -1 means negative chi per ndf
+    * -2 means chi per ndf > 10^7
+    * -3 means fit didn't run due to data overflow
+    * -4 means error in NPE calculation
+    * -5 means error opening root file
+    * -6 means null TTree in .root file
 
 ### *fit_pmt_wrapper.c*
  - This Root macro serves as a bridge between the immense power and detail of fit_pmt.c and the ease of use of run_fit_pmt.sh (described next).
