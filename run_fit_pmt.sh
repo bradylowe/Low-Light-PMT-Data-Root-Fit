@@ -8,31 +8,15 @@
 # with it. PNGs will be output for each data file.  
 ##################################################################
 
-########################
-# Define constants ###
-######################
+# Quickly grab the output from the run_id selection
+run_list=$(head -n 1 selected_runs.csv | sed "s/,/ /g")
 
-# This is a file used to pass data back from the Root
-# macro to this script
-sqlfile="sql_output.txt"
-
-# This is where images are stored
+# This is where data/images are stored
 data_dir=$(grep data_dir setup.txt | awk -F'=' '{print $2}')
 im_dir=$(grep im_dir setup.txt | awk -F'=' '{print $2}')
 
-# This is where data is stored
 
-
-#######################################################
 # Decode input parameters
-######################################################
-#  ## Should have the form:  optionName=optionValue
-#  ## Example:               conGain=90
-#  ## This means we will constrain the gain to within
-#  ## 90% of what we think it really is.
-#######################################################
-
-# Loop through input parameters
 for item in $* ; do
 	name=$(echo ${item} | awk -F'=' '{print $1 }')
 	val=${item#${name}=}
@@ -77,7 +61,7 @@ for item in $* ; do
 		saveNN=${val}
 	# Single run_id
 	elif [[ ${name} == "run_id" ]] ; then
-		run_id=${val}
+		run_list=${val}
 	# Display images through eog when finished
 	elif [[ ${name} == "showImages" ]] ; then
 		showImages=${val}
@@ -140,25 +124,6 @@ if [ ${#rootFile} -gt 0 -a ${#run_id} -eq 0 ] ; then
 	run_id=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT run_id FROM run_params WHERE rootfile = '${rootfile}';")
 fi
 
-################################################################################
-# If the user doesn't send in a root file, read the numbers in selected_runs.csv
-# You can set the values in selected_runs.csv via the script sql_select_data.sh
-################################################################################
-
-# Check for a list  of runs from selected_runs.csv
-if [ ! -f selected_runs.csv -a ${#run_id} -eq 0 ] ; then
-	echo "No files to process. Exiting..."
-	exit
-fi
-
-# Single run_id takes priority, leave Root running for user interaction
-if [ ${#run_id} -gt 0 ] ; then
-	run_list=${run_id}
-else
-	run_list=$(head -n 1 selected_runs.csv | sed "s/,/ /g")
-fi
-
-
 # Initialize lists for loop
 created_pngs=""
 # Loop through all files in list, run macro to create png and numbers each time
@@ -179,11 +144,15 @@ for cur_id in ${run_list} ; do
 		fitID=0
 	fi
 
+	# Define sql output file for grabbing the output from the root file and storing it
+	sqlfile="sql_output_${fitID}.csv"
+	
 	# If user sent in single run_id, DONT DO BATCH MODE
-	if [ ${#run_id} -eq 0 ] ; then
-		rootOptions="-l -b -q"
-	else
+	single_run=$(echo ${run_list} | grep \ )
+	if [ ${#single_run} -eq 0 ] ; then
 		rootOptions="-l"
+	else
+		rootOptions="-l -b -q"
 	fi
 	# Fit the data, grab chi squared per ndf
 	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $6, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo})")

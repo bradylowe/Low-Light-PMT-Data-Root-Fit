@@ -376,7 +376,7 @@ int fit_pmt(
         	chi/double(ndf), gain, gainError, gainPercentError,
 		conGain, conLL, conInj, noExpo
 	);
-	file.open("sql_output.txt", std::ofstream::out);
+	file.open(Form("sql_output_%d.csv", fitID), std::ofstream::out);
 	if (file.is_open()) {
 		file << queryLine << endl;
 		file.close();
