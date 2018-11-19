@@ -2,7 +2,7 @@
 # Initialize input parameters
 pmt_list="1 2 3 4 5 6"
 ll_list="20 30 40 50 90 100"
-good=1
+quality=2
 
 # Parse input parameters
 for item in $* ; do
@@ -12,8 +12,8 @@ for item in $* ; do
 		pmt_list=${val}
 	elif [[ ${name} == "ll" ]] ; then
 		ll_list=${val}
-	elif [[ ${name} == "good" ]] ; then
-		good=${val}
+	elif [[ ${name} == "quality" ]] ; then
+		quality=${val}
 	fi
 		
 done
@@ -25,7 +25,7 @@ for pmt in ${pmt_list} ; do
 	echo ==================================
 	# Loop through all ll's for this pmt
 	for ll in ${ll_list} ; do
-		./sql_select_ids.sh fit run_cond="filter=7" ll=${ll} pmt=${pmt} good=${good} recent=1
+		./sql_select_ids.sh fit run_cond="filter=7" ll=${ll} pmt=${pmt} quality=${quality} recent=1
 		echo ll = ${ll}
 		./sql_ave_errors.sh mu_out
 		echo ==================================

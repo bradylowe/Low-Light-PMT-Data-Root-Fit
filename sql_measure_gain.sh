@@ -1,7 +1,7 @@
 
 # Initialize input parameters
 pmt_list="1 2 3 4 5 6"
-good=1
+quality=2
 
 # Parse input
 for item in $* ; do
@@ -12,8 +12,8 @@ for item in $* ; do
 		pmt_list=${val}
 	elif [[ ${name} = "hv" ]] ; then
 		hv=${val}
-	elif [[ ${name} == "good" ]] ; then
-		good=${val}
+	elif [[ ${name} == "quality" ]] ; then
+		quality=${val}
 	fi
 done
 
@@ -34,7 +34,7 @@ for pmt in ${pmt_list} ; do
 	echo pmt ${pmt}
 	echo ================================
 	for hv in ${hv_list} ; do
-		nfits=$(./sql_select_ids.sh fit recent=1 good=${good} hv=${hv} pmt=${pmt} | awk '{print $1}')
+		nfits=$(./sql_select_ids.sh fit recent=1 quality=${quality} hv=${hv} pmt=${pmt} | awk '{print $1}')
 		if [ ${nfits} -eq 0 ] ; then
 			continue
 		fi

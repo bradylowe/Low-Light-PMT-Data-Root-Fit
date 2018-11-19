@@ -12,12 +12,13 @@ hllv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv < 1800"
 llhv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv >= 1800"
 lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < 1800"
 
-# Define fits on a scale of good and bad
+# Define quality of fits on a scale from 1 (bad) to 5 (good)
 good_runs="ll>0 AND nevents>=500000"
-
-ok_fits="chi>=0 AND chi<1000 AND gain>0 AND gain<1.5 AND gain_percent_error<100 AND mu_out>mu_out_error AND gain_percent_error>0"
+sloppy_fits="chi>=0 AND chi<10000 AND gain>0 AND gain<1.5 AND gain_percent_error<1000 AND mu_out>mu_out_error AND gain_percent_error>0"
+ok_fits="chi>=0 AND chi<50 AND gain>0 AND gain<1.5 AND gain_percent_error<50 AND mu_out>mu_out_error AND gain_percent_error>0"
 good_fits="chi>=0 AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
 better_fits="chi>=0 AND chi<2 AND gain>0 AND gain<1.5 AND gain_percent_error<3 AND mu_out>mu_out_error AND gain_percent_error>0"
+best_fits="chi>=0 AND chi<1000 AND gain>0 AND gain<1.5 AND gain_percent_error<100 AND mu_out>mu_out_error AND gain_percent_error>0 ORDER BY chi DESC, gain_percent_error DESC, mu_out_error DESC LIMIT 1"
 
 recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
 
@@ -37,23 +38,19 @@ for item in $* ; do
 		id_type="fit_id"
 		table="fit_results"
 		outfile="selected_fits.csv"
-	# Grab all fits that aren't garbage
-	elif [[ ${name} == "ok" ]] ; then
+	# Select the quality of fits here
+	elif [[ ${name} == "quality" ]] ; then
+		run_cond="${run_cond} AND ${good_runs}"
 		if [ ${val} -eq 1 ] ; then
-			run_cond="${run_cond} AND ${good_runs}"
+			fit_cond="${fit_cond} AND ${sloppy_fits}"
+		elif [ ${val} -eq 2 ] ; then
 			fit_cond="${fit_cond} AND ${ok_fits}"
-		fi
-	# Only grab good fits
-	elif [[ ${name} == "good" ]] ; then
-		if [ ${val} -eq 1 ] ; then
-			run_cond="${run_cond} AND ${good_runs}"
+		elif [ ${val} -eq 3 ] ; then
 			fit_cond="${fit_cond} AND ${good_fits}"
-		fi
-	# Only grab really good fits
-	elif [[ ${name} == "better" ]] ; then
-		if [ ${val} -eq 1 ] ; then
-			run_cond="${run_cond} AND ${good_runs}"
+		elif [ ${val} -eq 4 ] ; then
 			fit_cond="${fit_cond} AND ${better_fits}"
+		elif [ ${val} -eq 5 ] ; then
+			fit_cond="${fit_cond} AND ${best_fits}"
 		fi
 	# Only grab recent fits
 	elif [[ ${name} == "recent" ]] ; then

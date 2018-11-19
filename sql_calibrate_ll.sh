@@ -1,9 +1,7 @@
 
 # Initialize input parameters
 pmt_list=""
-ok=0
-good=0
-better=0
+quality=2
 ll_list="20 30 40 50 90 100"
 
 # Parse input
@@ -15,12 +13,8 @@ for item in $* ; do
 		pmt_list=${val}
 	elif [[ ${name} = "ll" ]] ; then
 		ll_list=${val}
-	elif [[ ${name} = "ok" ]] ; then
-		ok=${val}
-	elif [[ ${name} = "good" ]] ; then
-		good=${val}
-	elif [[ ${name} = "better" ]] ; then
-		better=${val}
+	elif [[ ${name} = "quality" ]] ; then
+		quality=${val}
 	fi
 done
 
@@ -33,7 +27,7 @@ for pmt in ${pmt_list} ; do
 	# Loop through all ll's in ll list
 	for ll in ${ll_list} ; do
 		# Select the good fits
-		./sql_select_ids.sh fit recent=1 ok=${ok} good=${good} better=${better} run_cond="filter=7&&ll=${ll}" pmt=${pmt} >> /dev/null
+		./sql_select_ids.sh fit recent=1 quality=${quality} run_cond="filter=7&&ll=${ll}" pmt=${pmt} >> /dev/null
 		# Grab the average PEs per flash from the fits
 		out=$(./sql_average.sh mu_out)
 		new_val=${out#*:  (}
