@@ -40,7 +40,8 @@ for pmt in ${pmt_list} ; do
 		fi
 		echo hv: ${hv}
 		./sql_ave_errors.sh
-		./sql_ave_errors.sh sig_out
-		echo ================================
+		#./sql_ave_errors.sh sig_out
+		echo ---
 	done
+	echo ================================
 done

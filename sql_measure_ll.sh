@@ -28,6 +28,7 @@ for pmt in ${pmt_list} ; do
 		./sql_select_ids.sh fit run_cond="filter=7" ll=${ll} pmt=${pmt} quality=${quality} recent=1
 		echo ll = ${ll}
 		./sql_ave_errors.sh mu_out
-		echo ==================================
+		echo ---
 	done
+	echo ==================================
 done

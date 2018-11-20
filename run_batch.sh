@@ -40,13 +40,13 @@ for pmt in ${pmt_list} ; do
 	if [ ${llhv} -eq 1 ] ; then
 		# Select the low light, high gain runs
 		./sql_select_ids.sh pmt=${pmt} llhv=1 quality=0 recent=1 
-		./run_fit_pmt.sh conGain=10 conLL=10
+		./run_fit_pmt.sh conGain=20 conLL=20
 		./sql_select_ids.sh pmt=${pmt} llhv=1 quality=0 recent=1 
-		./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
+		./run_fit_pmt.sh conGain=20 conLL=20 noExpo=1
 		if [ ${extra_fits} -eq 1 ] ; then
-			./sql_select_ids.sh pmt=${pmt} llhv=1 quality=0 recent=1 
-			./run_fit_pmt.sh conGain=10 conLL=10 fitEngine=1
-			./sql_select_ids.sh pmt=${pmt} llhv=1 quality=0 recent=1 
+			./sql_select_ids.sh pmt=${pmt} llhv=1 quality=0 recent=1
+			./run_fit_pmt.sh conGain=10 conLL=10 
+			./sql_select_ids.sh pmt=${pmt} llhv=1 quality=0 recent=1
 			./run_fit_pmt.sh conGain=10 conLL=10 conInj=10
 		fi
 	fi
@@ -63,6 +63,8 @@ for pmt in ${pmt_list} ; do
 			./run_fit_pmt.sh conGain=20 conLL=0
 			./sql_select_ids.sh lllv=1 pmt=${pmt} quality=0 recent=1 
 			./run_fit_pmt.sh conGain=20 conLL=0 noExpo=1
+			./sql_select_ids.sh lllv=1 pmt=${pmt} quality=0 recent=1 
+			./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
 		fi
 	fi
 
@@ -78,6 +80,8 @@ for pmt in ${pmt_list} ; do
 			./run_fit_pmt.sh conGain=0 conLL=20 noExpo=1
 			./sql_select_ids.sh hlhv=1 pmt=${pmt} quality=0 recent=1
 			./run_fit_pmt.sh conGain=20 conLL=2 noExpo=1
+			./sql_select_ids.sh hlhv=1 pmt=${pmt} quality=0 recent=1
+			./run_fit_pmt.sh conGain=10 conLL=10
 		fi
 	fi
 
@@ -93,6 +97,8 @@ for pmt in ${pmt_list} ; do
 			./run_fit_pmt.sh conGain=20 conLL=0
 			./sql_select_ids.sh hllv=1 pmt=${pmt} quality=0 recent=1
 			./run_fit_pmt.sh conGain=20 conLL=0 noExpo=1
+			./sql_select_ids.sh hllv=1 pmt=${pmt} quality=0 recent=1
+			./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
 		fi
 	fi
 

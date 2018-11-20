@@ -20,7 +20,7 @@ sloppy_fits="chi>=0 AND chi<10000 AND gain>0 AND gain<1.5 AND gain_percent_error
 ok_fits="chi>=0 AND chi<50 AND gain>0 AND gain<1.5 AND gain_percent_error<50 AND mu_out>mu_out_error AND gain_percent_error>0"
 good_fits="chi>=0 AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
 better_fits="chi>=0 AND chi<2 AND gain>0 AND gain<1.5 AND gain_percent_error<3 AND mu_out>mu_out_error AND gain_percent_error>0"
-best_fits="${sloppy_fits} ORDER BY chi DESC, gain_percent_error DESC, mu_out_error DESC LIMIT 1"
+best_fits="${sloppy_fits} ORDER BY chi, gain_percent_error, mu_out_error LIMIT 1"
 
 recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
 
@@ -80,7 +80,7 @@ for item in $* ; do
 			run_cond="${run_cond} AND ${lllv}"
 		fi
 	# Grab high voltage and light level
-	elif [[ ${name} == "hv" || ${name} == "ll" || ${name} == "pmt" || ${name} == "filter" ]] ; then
+	elif [[ ${name:0:2} == "hv" || ${name:0:2} == "ll" || ${name:0:3} == "pmt" || ${name:0:6} == "filter" ]] ; then
 		run_cond="${run_cond} AND ${item}"
 	fi
 done
