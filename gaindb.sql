@@ -187,6 +187,42 @@ INSERT INTO `fit_results` VALUES (1,751,0,1000,1,1,25,0.01,244.461392,1.499783,0
 UNLOCK TABLES;
 
 --
+-- Table structure for table `high_light_results`
+--
+
+DROP TABLE IF EXISTS `high_light_results`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `high_light_results` (
+  `fit_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `run_id` int(10) unsigned DEFAULT NULL,
+  `ped_out` double DEFAULT NULL,
+  `ped_rms_out` double DEFAULT NULL,
+  `ped_out_error` double DEFAULT NULL,
+  `ped_rms_out_error` double DEFAULT NULL,
+  `sig_out` double DEFAULT NULL,
+  `sig_rms_out` double DEFAULT NULL,
+  `sig_out_error` double DEFAULT NULL,
+  `sig_rms_out_error` double DEFAULT NULL,
+  `alpha_out` double DEFAULT NULL,
+  `alpha_out_error` double DEFAULT NULL,
+  `scale` int(1) unsigned DEFAULT NULL,
+  `chi` int(7) unsigned DEFAULT NULL,
+  `png_file` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`fit_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `high_light_results`
+--
+
+LOCK TABLES `high_light_results` WRITE;
+/*!40000 ALTER TABLE `high_light_results` DISABLE KEYS */;
+/*!40000 ALTER TABLE `high_light_results` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `run_params`
 --
 
@@ -234,4 +270,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-20 17:17:36
+-- Dump completed on 2018-11-20 21:19:26
