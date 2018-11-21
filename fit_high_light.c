@@ -30,7 +30,10 @@ double sig_fit(Double_t *x, Double_t *par) {
 	return par[0] * ret;
 }
 
-double fit_high_light(string rootFile, Int_t scale = 0, Int_t savePNG = 0) {
+double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t scale = 0, Int_t savePNG = 0) {
+
+	// Make output png filename
+	string pngFile = Form("high_light_%d.png", fitID);
 
 	// Define canvas
 	gStyle->SetOptFit(11111111);
@@ -172,10 +175,46 @@ double fit_high_light(string rootFile, Int_t scale = 0, Int_t savePNG = 0) {
 	signal->Draw();	
 	fit_sig->Draw("same");
 	// Cut off path to file from filename
-	Int_t cut = rootFile.find("/r") + 1;
+	Int_t cut = rootFile.find("/daq") + 1;
+	cut = rootFile.find("/r") + 1;
 	rootFile = rootFile.substr(cut);
 	canvas->Update();
-	canvas->Print(Form("%s.png", rootFile.c_str()));
+	canvas->Print(pngFile.c_str());
+
+	// Grab parameters
+	Double_t ped = fit_ped->GetParameter(1);
+	Double_t pedrms = fit_ped->GetParameter(2);
+	Double_t pederr = fit_ped->GetParError(1);
+	Double_t pedrmserr = fit_ped->GetParError(2);
+	Double_t sig = fit_sig->GetParameter(1) - ped;
+	Double_t sigrms = fit_sig->GetParameter(2);
+	Double_t sigerr = fit_sig->GetParError(1);
+	Double_t sigrmserr = fit_sig->GetParError(2);
+	Double_t alpha = fit_sig->GetParameter(3);
+	Double_t alphaerr = fit_sig->GetParError(3);
+	if (scale == 1) {
+		sig *= 8.00;
+		sigrms *= 8.00;
+		sigerr *= 8.00;
+		sigrmserr *= 8.00;
+	}
+	Int_t chi = (int)(fit_sig->GetChisquare() / fit_sig->GetNDF());
+	// Create SQL query for storing all the output of this run in the gaindb
+	ofstream sqlfile;
+	char queryLine[2048];
+	sprintf(queryLine,
+		"run_id='%d',ped_out='%.8f',ped_rms_out='%.8f',ped_out_error='%.8f',ped_rms_out_error='%.8f',sig_out='%.8f',sig_rms_out='%.8f',sig_out_error='%.8f',sig_rms_out_error='%.8f',alpha_out='%.8f',alpha_out_error='%.8f',scale='%d',chi='%d',png_file='%s'",
+		runID, 
+		ped, pedrms, pederr, pedrmserr,
+		sig, sigrms, sigerr, sigrmserr,
+		alpha, alphaerr, 
+		scale, chi, pngFile.c_str()
+	);
+	sqlfile.open(Form("sql_output_high_light_%d.csv", fitID), std::ofstream::out);
+	if (sqlfile.is_open()) {
+		sqlfile << queryLine << endl;
+		sqlfile.close();
+	} else printf("\nUnable to output the following to SQL file:\n%s\n", queryLine);
 	
 	// Return difference in means
 	if (scale == 0)	return fit_sig->GetParameter(1) - fit_ped->GetParameter(1);
