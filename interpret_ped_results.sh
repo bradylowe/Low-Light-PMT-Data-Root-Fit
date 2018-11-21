@@ -10,7 +10,7 @@ while read line ; do
 	if [ ${count} -eq 0 ] ; then
 		continue
 	fi
-	mu=$(./sql_average.sh mu_out)
+	mu=$(./sql_average.sh column=mu_out)
 	mu=${mu%,*}
 	mu=${mu#*:*(}
 

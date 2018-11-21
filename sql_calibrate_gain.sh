@@ -55,10 +55,10 @@ for pmt in ${pmt_list} ; do
 				hllv=0
 			fi
 		fi
-		./sql_select_ids.sh fit recent=1 quality=${quality} hv=${hv} pmt=${pmt} llhv=${llhv} hllv=${hllv} >> /dev/null
+		./sql_select_ids.sh regime=low recent=1 quality=${quality} hv=${hv} pmt=${pmt} llhv=${llhv} hllv=${hllv} >> /dev/null
 		# Grab the average signal size and average signal rms of the fits
-		out=$(./sql_average.sh sig_out)
-		out_rms=$(./sql_average.sh sig_rms_out)
+		out=$(./sql_average.sh column=sig_out)
+		out_rms=$(./sql_average.sh column=sig_rms_out)
 		new_val=${out#*:  (}
 		new_val=${new_val%,*}
 		new_rms=${out_rms#*:  (}

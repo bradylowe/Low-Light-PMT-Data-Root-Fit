@@ -35,11 +35,17 @@ for item in $* ; do
 	# Grab fit_cond value
 	elif [[ ${name} == "fit_cond" ]] ; then
 		fit_cond="${fit_cond} AND ${val}"
-	# Return either run_ids or fit_ids
-	elif [[ ${name} == "fit" || ${name} == "fits" ]] ; then
-		id_type="fit_id"
-		table="fit_results"
-		outfile="selected_fits.csv"
+	# Return fit_ids from low light fit
+	elif [[ ${name} == "regime" ]] ; then
+		if [[ ${val} == "low" ]] ; then
+			id_type="fit_id"
+			table="fit_results"
+			outfile="selected_fits.csv"
+		elif [[ ${val} == "high" ]] ; then
+			id_type="fit_id"
+			table="high_light_results"
+			outfile="selected_high_light_fits.csv"
+		fi
 	# Select the quality of fits here
 	elif [[ ${name} == "quality" ]] ; then
 		run_cond="${run_cond} AND ${good_runs}"
@@ -104,10 +110,10 @@ else
 	if [ ${#list} -eq 0 ] ; then
 		list=0
 	fi
-	query="USE gaindb; SELECT fit_id FROM fit_results WHERE run_id IN (${list}) AND ${fit_cond};"
+	query="USE gaindb; SELECT fit_id FROM ${table} WHERE run_id IN (${list}) AND ${fit_cond};"
 	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	# Count the selected runs
-	query="USE gaindb; SELECT COUNT(fit_id) FROM fit_results WHERE run_id IN (${list}) AND ${fit_cond};"
+	query="USE gaindb; SELECT COUNT(fit_id) FROM ${table} WHERE run_id IN (${list}) AND ${fit_cond};"
 	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 fi
 

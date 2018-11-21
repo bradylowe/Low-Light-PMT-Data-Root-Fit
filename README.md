@@ -86,9 +86,10 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ### *sql_select_ids.sh*
  - This script takes in a conditional statement run_cond and/or fit_cond to select run_ids or fit_ids from the sql table.
  - This file writes the selected run_ids by default to the selected_runs.csv.
- - If you send in the word "fit" as a parameter, fit_ids will be stored instead into selected_fits.csv.
+ - If the user sends in either regime=low or regime=high, then fit_ids will be selected instead, and will be written to selected_fits.csv or selected_high_light_fits.csv.
  - Example usage:   ./sql_select_ids.sh fit run_cond="hv=2000&&ll<90" fit_cond="chi<2"
  - Here is a list of possible input parameters as well as possible values:
+    * regime=low
     * good=1
     * recent=1
     * hvhl=1
@@ -105,6 +106,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 ### *sql_average.sh*
  - This script takes in an argument which is a column in the fit_results table and finds the average and standard dev of the column for the runs in selected_runs.csv.
+ - Example:  ./sql_average.sh column=mu_out regime=low 
 
 ### *sql_ave_errors.sh*
  - This script is just like the above, but it also grabs the errors column and returns it.

@@ -1,15 +1,27 @@
 # PNG location
 im_dir="$(grep im_dir setup.txt | awk -F'=' '{print $2}')"
 
-# Grab input from user or file
-if [ $# -eq 1 ] ; then
-	output=$1
-else
-	output=$(head selected_fits.csv)
+fit_type="low_light"
+
+if [ $# -gt 0 ] ; then
+	fit_type=$1
+fi
+
+if [[ ${fit_type} == "low_light" ]] ; then
+	im_dir="${im_dir}/png_fit/"
+	column="human_png"
+	table="fit_results"
+	output=$(head -n 1 selected_fits.csv)
+elif [[ ${fit_type} == "high_light" ]] ; then
+	im_dir="${im_dir}/png_high_light/"
+	column="png_file"
+	table="high_light_results"
+	output=$(head -n 1 selected_high_light_fits.csv)
 fi
 
 # Qeury for filename and append path
-pngs=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT CONCAT('${im_dir}/png_fit/', human_png) FROM fit_results WHERE fit_id IN (${output});")
+query="USE gaindb; SELECT CONCAT('${im_dir}', ${column}) FROM ${table} WHERE fit_id IN (${output});"
+pngs=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 
 # Show image(s)
 eog ${pngs}

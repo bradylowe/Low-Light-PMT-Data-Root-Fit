@@ -36,9 +36,9 @@ for pmt in ${pmt_list} ; do
 			llhv=0
 			hlhv=1
 		fi
-		./sql_select_ids.sh fit recent=1 quality=${quality} llhv=${llhv} hlhv=${hlhv} run_cond="filter=7" pmt=${pmt} ll=${ll} >> /dev/null
+		./sql_select_ids.sh regime=low recent=1 quality=${quality} llhv=${llhv} hlhv=${hlhv} run_cond="filter=7" pmt=${pmt} ll=${ll} >> /dev/null
 		# Grab the average PEs per flash from the fits
-		out=$(./sql_average.sh mu_out)
+		out=$(./sql_average.sh column=mu_out)
 		new_val=${out#*:  (}
 		new_val=${new_val%,*}
 		check=$(echo ${new_val} | grep .)
