@@ -15,8 +15,12 @@
 ####################################################################
 
 # Initialize values to be input into table
-pmt=5
-base=5
+pmt=6
+if [ ${pmt} -lt 5 ] ; then
+	base=1
+else
+	base=${pmt}
+fi
 hv=2000
 filter=7
 ll=0
@@ -32,7 +36,7 @@ nevents=500000
 cd $(grep data_dir setup.txt | awk -F'=' '{print $2}')
 
 # Grab the files from the daq
-selected_files=$(ls daq3/r2*.root)
+selected_files=$(ls daq3/r3*.root)
 selected_files="${selected_files} $(ls daq5/r*.root)"
 
 # SET INPUT VALUE FOR ALL SELECTED RUNS
@@ -61,8 +65,7 @@ for rootfile in ${selected_files} ; do
 	query="USE gaindb; SELECT MAX(run_num) FROM run_params WHERE daq=${daq};"
 	max_run_num=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 	if [ ${run_num} -lt ${max_run_num} ] ; then
-		#continue
-		foo=7
+		continue
 	fi
 
 	echo "---------------------------------"
