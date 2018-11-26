@@ -5,14 +5,16 @@ fit_cond="TRUE"
 id_type="fit_id"
 table="fit_results"
 outfile="selected_fits.csv"
+regime="all"
+pmt=1
 
-# Define high voltage/light level regimes
-limit=1800  # 2" PMTs
-#limit=1100 # 3" PMTs
-hlhv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv >= ${limit}"
-hllv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv < ${limit}"
-llhv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv >= ${limit}"
-lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < ${limit}"
+# Define high/low voltage regimes
+high_voltage="hv >= 1600"
+low_voltage="hv <= 1800"
+
+# Define high/low light level regimes
+high_light="(filter=7 AND ll>50) OR (filter=8 AND ll>60)"
+low_light="(filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR filter=1"
 
 good_runs="ll>0 AND nevents>=500000"
 recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
@@ -38,15 +40,7 @@ for item in $* ; do
 		fit_cond="${fit_cond} AND ${val}"
 	# Return fit_ids from low light fit
 	elif [[ ${name} == "regime" ]] ; then
-		if [[ ${val} == "low" ]] ; then
-			id_type="fit_id"
-			table="fit_results"
-			outfile="selected_fits.csv"
-		elif [[ ${val} == "high" ]] ; then
-			id_type="fit_id"
-			table="high_light_results"
-			outfile="selected_high_light_fits.csv"
-		fi
+		regime=${val}
 	# Select the quality of fits here
 	elif [[ ${name} == "quality" ]] ; then
 		run_cond="${run_cond} AND ${good_runs}"
@@ -66,57 +60,68 @@ for item in $* ; do
 		if [ ${val} -eq 1 ] ; then
 			run_cond="${run_cond} AND ${recent_runs}"
 		fi
-	# Grab the high-light, high-voltage runs
-	elif [[ ${name} == "hlhv" ]] ; then
-		if [ ${val} -eq 1 ] ; then
-			run_cond="${run_cond} AND ${hlhv}"
+	# Grab pmt
+	elif [[ ${name} == "pmt" ]] ; then
+		pmt=${val}
+		run_cond="${run_cond} AND pmt=${pmt}"
+		if [ ${pmt} -eq 5 ] ; then
+			high_voltage="hv >= 1000"
+			low_voltage="hv <= 1100"
+		elif [ ${pmt} -eq 6 ] ; then
+			high_voltage="hv >= 800"
+			low_voltage="hv <= 900"
 		fi
-	# Grab the high-light, low-voltage runs
-	elif [[ ${name} == "hllv" ]] ; then
-		if [ ${val} -eq 1 ] ; then
-			run_cond="${run_cond} AND ${hllv}"
-		fi
-	# Grab the low-light, high-voltage runs
-	elif [[ ${name} == "llhv" ]] ; then
-		if [ ${val} -eq 1 ] ; then
-			run_cond="${run_cond} AND ${llhv}"
-		fi
-	# Grab the low-light, low-voltage runs
-	elif [[ ${name} == "lllv" ]] ; then
-		if [ ${val} -eq 1 ] ; then
-			run_cond="${run_cond} AND ${lllv}"
-		fi
-	# Grab high voltage and light level
-	elif [[ ${name:0:2} == "hv" || ${name:0:2} == "ll" || ${name:0:3} == "pmt" || ${name:0:6} == "filter" ]] ; then
+	# Grab high voltage, light level, and filter
+	elif [[ ${name:0:2} == "hv" || ${name:0:2} == "ll" || ${name:0:6} == "filter" ]] ; then
 		run_cond="${run_cond} AND ${item}"
 	fi
 done
 
+# Apply conditions for regime of choice
+if [[ ${regime} != "all" ]] ; then
+	# Check for low light regime
+	check=$(echo ${regime} | grep "ll")
+	if [ ${#check} -gt 0 ] ; then
+		id_type="fit_id"
+		table="fit_results"
+		outfile="selected_fits.csv"
+		run_cond="${run_cond} AND ${low_light}"
+	fi
+	# Check for high light regime
+	check=$(echo ${regime} | grep "hl")
+	if [ ${#check} -gt 0 ] ; then
+		id_type="fit_id"
+		table="high_light_results"
+		outfile="selected_high_light_fits.csv"
+		run_cond="${run_cond} AND ${high_light}"
+	fi
+	# Check for low voltage regime
+	check=$(echo ${regime} | grep "lv")
+	if [ ${#check} -gt 0 ] ; then
+		run_cond="${run_cond} AND ${low_voltage}"
+	fi
+	# Check for high voltage regime
+	check=$(echo ${regime} | grep "hv")
+	if [ ${#check} -gt 0 ] ; then
+		run_cond="${run_cond} AND ${high_voltage}"
+	fi
+fi
 
 
 ############################# Query database, write results to output file
-if [[ ${id_type} == "run_id" ]] ; then
-	# Create the query from condition
-	query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
-	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	# Count the selected runs
-	query="USE gaindb; SELECT COUNT(run_id) FROM run_params WHERE ${run_cond};"
-	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-else
-	# Create the query from condition
-	query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
-	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	# Make result comma-separated list
-	list=$(echo ${ret} | sed "s/\n/ /g" | sed "s/ /,/g")
-	if [ ${#list} -eq 0 ] ; then
-		list=0
-	fi
-	query="USE gaindb; SELECT fit_id FROM ${table} WHERE run_id IN (${list}) AND ${fit_cond};"
-	ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	# Count the selected runs
-	query="USE gaindb; SELECT COUNT(fit_id) FROM ${table} WHERE run_id IN (${list}) AND ${fit_cond};"
-	count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+# Create the query from condition
+query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
+ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+# Make result comma-separated list
+list=$(echo ${ret} | sed "s/\n/ /g" | sed "s/ /,/g")
+if [ ${#list} -eq 0 ] ; then
+	list=0
 fi
+query="USE gaindb; SELECT fit_id FROM ${table} WHERE run_id IN (${list}) AND ${fit_cond};"
+ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+# Count the selected runs
+query="USE gaindb; SELECT COUNT(fit_id) FROM ${table} WHERE run_id IN (${list}) AND ${fit_cond};"
+count=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 
 # Make result comma-separated list
 list=$(echo ${ret} | sed "s/\n/ /g")

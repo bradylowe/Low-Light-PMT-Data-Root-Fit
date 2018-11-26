@@ -1,6 +1,7 @@
 
 column="gain"
 table="fit_results"
+regime="all"
 
 for item in $* ; do
 	name=$(echo ${item} | awk -F'=' '{print $1}')
@@ -8,9 +9,7 @@ for item in $* ; do
 	if [[ ${name} == "column" ]] ; then
 		column=${val}
 	elif [[ ${name} == "regime" ]] ; then
-		if [[ ${val} == "high" ]] ; then
-			table="high_light_results"
-		fi
+		regime=${val}
 	fi
 done
 

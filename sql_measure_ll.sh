@@ -3,7 +3,7 @@
 pmt_list="1 2 3 4 5 6"
 ll_list="20 30 40 50 90 100"
 quality=2
-regime="low"
+regime="all"
 
 # Parse input parameters
 for item in $* ; do

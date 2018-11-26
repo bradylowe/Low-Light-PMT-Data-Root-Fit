@@ -2,7 +2,7 @@
 # Initialize input parameters
 pmt_list=""
 quality=2
-regime="low"
+regime="all"
 
 # Parse input
 for item in $* ; do
