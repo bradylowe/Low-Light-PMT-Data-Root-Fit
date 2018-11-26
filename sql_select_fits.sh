@@ -2,9 +2,9 @@
 ############################### Initialize input params, check for errors
 run_cond="TRUE"
 fit_cond="TRUE"
-id_type="run_id"
-table="run_params"
-outfile="selected_runs.csv"
+id_type="fit_id"
+table="fit_results"
+outfile="selected_fits.csv"
 
 # Define high voltage/light level regimes
 limit=1800  # 2" PMTs
@@ -14,15 +14,16 @@ hllv="((filter=7 AND ll>50) OR (filter=8 AND ll>60)) AND hv < ${limit}"
 llhv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv >= ${limit}"
 lllv="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR (filter=1)) AND hv < ${limit}"
 
-# Define quality of fits on a scale from 1 (bad) to 5 (good)
 good_runs="ll>0 AND nevents>=500000"
+recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
+
+# Define quality of fits on a scale from 1 (bad) to 5 (good)
 sloppy_fits="chi>=0 AND chi<10000 AND gain>0 AND gain<1.5 AND gain_percent_error<1000 AND mu_out>mu_out_error AND gain_percent_error>0"
 ok_fits="chi>=0 AND chi<50 AND gain>0 AND gain<1.5 AND gain_percent_error<50 AND mu_out>mu_out_error AND gain_percent_error>0"
 good_fits="chi>=0 AND chi<10 AND gain>0 AND gain<1.5 AND gain_percent_error<10 AND mu_out>mu_out_error AND gain_percent_error>0"
 better_fits="chi>=0 AND chi<2 AND gain>0 AND gain<1.5 AND gain_percent_error<3 AND mu_out>mu_out_error AND gain_percent_error>0"
 best_fits="${sloppy_fits} ORDER BY chi, gain_percent_error, mu_out_error LIMIT 1"
 
-recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
 
 ############################################### Parse input parameters
 for item in $* ; do

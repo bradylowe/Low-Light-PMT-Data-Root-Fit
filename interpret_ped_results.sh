@@ -6,7 +6,7 @@ while read line ; do
 	signal=$(echo ${line} | awk '{print $3}' | awk -F':' '{print $2}')
 
 	# Measure mu_out
-	count=$(./sql_select_ids.sh id="fit_id" run_cond="run_id=${id}" good=1 | awk '{print $1}')
+	count=$(./sql_select_fits.sh run_cond="run_id=${id}" quality=3 | awk '{print $1}')
 	if [ ${count} -eq 0 ] ; then
 		continue
 	fi

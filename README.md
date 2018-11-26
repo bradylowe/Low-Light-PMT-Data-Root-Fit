@@ -83,18 +83,22 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ---
 ---
 
-### *sql_select_ids.sh*
- - This script takes in a conditional statement run_cond and/or fit_cond to select run_ids or fit_ids from the sql table.
- - This file writes the selected run_ids by default to the selected_runs.csv.
- - If the user sends in either regime=low or regime=high, then fit_ids will be selected instead, and will be written to selected_fits.csv or selected_high_light_fits.csv.
- - Example usage:   ./sql_select_ids.sh fit run_cond="hv=2000&&ll<90" fit_cond="chi<2"
+### *sql_select_runs.sh*
+ - This script takes in some sql conditional statements, selects corresponding run_ids, and writes them to selected_runs.csv.
+ - Example usage:   ./sql_select_runs.sh fit run_cond="hv=2000&&ll<90"
  - Here is a list of possible input parameters as well as possible values:
-    * regime=low
-    * good=1
+    * quality
     * recent=1
     * hvhl=1
-    * fit_cond="chi<2&&mu_out<5.5"
     * run_cond="hv>1700&&hv<2000&&gate=100"
+
+### *sql_select_fits.sh*
+ - This script is just like the above, except it puts fit_ids into selected_fits.csv.
+ - If the user sends in either regime=high, then fit_ids from the fit_high_light will be stored in selected_high_light_fits.csv.
+ - Here are a couple new parameters from the run_id version:
+    * regime=high
+    * quality=5
+    * fit_cond="chi<2&&mu_out<5.5"
 
 ### *sql_remove_fits.sh*
  - This script removes all the fits in selected_fits.csv
