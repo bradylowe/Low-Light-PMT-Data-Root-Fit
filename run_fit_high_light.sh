@@ -4,13 +4,6 @@ im_dir=$(grep im_dir setup.txt | awk -F'=' '{print $2}')
 noSQL=0
 savePNG=1
 
-
-if [[ $1 == "scale=1" ]] ; then
-	scale=1
-else
-	scale=0
-fi
-
 files=$(head selected_runs.csv | sed "s/,/ /g")
 
 for cur_id in ${files} ; do
@@ -29,6 +22,8 @@ for cur_id in ${files} ; do
 	chi2=$(root -b -q -l "fit_high_light.c(\"${data_dir}/${filename}\", ${cur_id}, ${fit_id})")
 	chi2=$(echo ${chi2} | awk '{print $NF}')
 	if [[ ${chi2:0:8} == "-2.00000" ]] ; then
+		mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; DELETE FROM high_light_results WHERE fit_id=${fit_id};"
+	fi
 	
 	# Query the database to store all output info from this fit
 	sqlfile="sql_output_high_light_${fit_id}.csv"
