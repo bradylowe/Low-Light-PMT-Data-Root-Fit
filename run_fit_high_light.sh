@@ -26,10 +26,9 @@ for cur_id in ${files} ; do
 	fi
 
 	# Run the fitting algorithm
-	chi2=$(root -b -q -l "fit_high_light.c(\"${data_dir}/${filename}\", ${cur_id}, ${fit_id}, ${scale})")
+	chi2=$(root -b -q -l "fit_high_light.c(\"${data_dir}/${filename}\", ${cur_id}, ${fit_id})")
 	chi2=$(echo ${chi2} | awk '{print $NF}')
-	#echo run:${id} scale:${scale} signal:${res} >> ped_results.txt
-	# Put the image where it goes
+	if [[ ${chi2:0:8} == "-2.00000" ]] ; then
 	
 	# Query the database to store all output info from this fit
 	sqlfile="sql_output_high_light_${fit_id}.csv"
