@@ -4,14 +4,16 @@ run_cond="TRUE"
 id_type="run_id"
 table="run_params"
 outfile="selected_runs.csv"
+regime="all"
+pmt=0
 
 # Define high/low voltage regimes
-high_voltage="hv >= 1600"
-low_voltage="hv <= 1800"
+high_voltage="hv>=1600"
+low_voltage="hv<=1800"
 
 # Define high/low light level regimes
-high_light="(filter=7 AND ll>50) OR (filter=8 AND ll>60)"
-low_light="(filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR filter=1"
+high_light="((filter=7 AND ll>=50) OR (filter=8 AND ll>=60))"
+low_light="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR filter=1)"
 
 good_runs="ll>0 AND nevents>=500000"
 recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
@@ -32,6 +34,9 @@ for item in $* ; do
 		if [ ${val} -eq 1 ] ; then
 			run_cond="${run_cond} AND ${recent_runs}"
 		fi
+	# Grab data regime (light level and voltage)
+	elif [[ ${name} == "regime" ]] ; then
+		regime=${val}
 	# Grab pmt
 	elif [[ ${name} == "pmt" ]] ; then
 		pmt=${val}
@@ -79,6 +84,10 @@ fi
 ############################# Query database, write results to output file
 # Create the query from condition
 query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
+
+
+
+echo ${query}
 ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 # Count the selected runs
 query="USE gaindb; SELECT COUNT(run_id) FROM run_params WHERE ${run_cond};"

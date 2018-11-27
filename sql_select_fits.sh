@@ -6,15 +6,15 @@ id_type="fit_id"
 table="fit_results"
 outfile="selected_fits.csv"
 regime="all"
-pmt=1
+pmt=0
 
 # Define high/low voltage regimes
-high_voltage="hv >= 1600"
-low_voltage="hv <= 1800"
+high_voltage="hv>=1600"
+low_voltage="hv<=1800"
 
 # Define high/low light level regimes
-high_light="(filter=7 AND ll>50) OR (filter=8 AND ll>60)"
-low_light="(filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR filter=1"
+high_light="((filter=7 AND ll>=50) OR (filter=8 AND ll>=60))"
+low_light="((filter=7 AND ll<=50) OR (filter=8 AND ll<=60) OR filter=1)"
 
 good_runs="ll>0 AND nevents>=500000"
 recent_runs="iped=40 AND gate=100 AND datarate=3500 AND daq=3"
@@ -65,8 +65,8 @@ for item in $* ; do
 		pmt=${val}
 		run_cond="${run_cond} AND pmt=${pmt}"
 		if [ ${pmt} -eq 5 ] ; then
-			high_voltage="hv >= 1000"
-			low_voltage="hv <= 1100"
+			high_voltage="hv>=1000"
+			low_voltage="hv<=1100"
 		elif [ ${pmt} -eq 6 ] ; then
 			high_voltage="hv >= 800"
 			low_voltage="hv <= 900"
