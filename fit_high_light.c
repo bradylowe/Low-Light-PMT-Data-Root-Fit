@@ -73,7 +73,7 @@ double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t s
 	
 	if (rawData->GetMaximumBin() > 4093) {
 		// If we go off low range, reload with high range
-		if (range == 0) return fit_high_light(rootFile, runID, fitID, savePNG, 1); 
+		if (scale == 0) return fit_high_light(rootFile, runID, fitID, savePNG, 1); 
 		// If we go off high range, return -2 error.
 		else return -2.0;
 	}
