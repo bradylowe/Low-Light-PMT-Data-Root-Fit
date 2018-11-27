@@ -30,7 +30,7 @@ double sig_fit(Double_t *x, Double_t *par) {
 	return par[0] * ret;
 }
 
-double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t savePNG = 0) {
+double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t savePNG = 0, Int_t range = 0) {
 
 	// Make output png filename
 	string pngFile = Form("high_light_%d.png", fitID);
@@ -69,6 +69,13 @@ double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t s
 	for (Int_t entry = 0; entry < branch->GetEntries(); entry++) {
 		branch->GetEntry(entry);
 		rawData->Fill(leaf->GetValue());
+	}
+	
+	if (rawData->GetMaximumBin() > 4093) {
+		// If we go off low range, reload with high range
+		if (range == 0) return fit_high_light(rootFile, runID, fitID, savePNG, 1); 
+		// If we go off high range, return -2 error.
+		else return -2.0;
 	}
 
 	// Grab a few statistics from the raw data
@@ -193,6 +200,10 @@ double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t s
 	Double_t alpha = fit_sig->GetParameter(3);
 	Double_t alphaerr = fit_sig->GetParError(3);
 	if (scale == 1) {
+		ped *= 8.00;
+		pedrms *= 8.00;
+		pederr *= 8.00;
+		pedrmserr *= 8.00;
 		sig *= 8.00;
 		sigrms *= 8.00;
 		sigerr *= 8.00;
@@ -216,8 +227,7 @@ double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t s
 		sqlfile.close();
 	} else printf("\nUnable to output the following to SQL file:\n%s\n", queryLine);
 	
-	// Return difference in means
-	if (scale == 0)	return fit_sig->GetParameter(1) - fit_ped->GetParameter(1);
-	else return (fit_sig->GetParameter(1) - fit_ped->GetParameter(1)) * 8.00;
+	// Return signal mean
+	return sig;
 
 }

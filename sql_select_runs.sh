@@ -84,10 +84,6 @@ fi
 ############################# Query database, write results to output file
 # Create the query from condition
 query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
-
-
-
-echo ${query}
 ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 # Count the selected runs
 query="USE gaindb; SELECT COUNT(run_id) FROM run_params WHERE ${run_cond};"
