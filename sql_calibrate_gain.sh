@@ -2,8 +2,6 @@
 # Initialize input parameters
 pmt_list=""
 quality=4
-llhv=0
-hllv=0
 
 # Parse input
 for item in $* ; do
@@ -28,8 +26,10 @@ for pmt in ${pmt_list} ; do
 	# Select hv_list
 	if [ ${pmt} -le 4 ] ; then
 		hv_list="2000 1975 1950 1925 1900 1800 1700 1600 1500 1400 1300 1200 1100 1000 900 800 700"
-	else
+	elif [ ${pmt} -eq 5 ] ; then
 		hv_list="1350 1300 1250 1200 1150 1100 1050 1000 900 800 700 600 500"
+	elif [ ${pmt} -eq 6 ] ; then
+		hv_list="1000 975 950 925 900 800 700 600 500 400"
 	fi
 	if [ ${#hv} -gt 0 ] ; then
 		hv_list=${hv}
@@ -38,24 +38,7 @@ for pmt in ${pmt_list} ; do
 	# Loop through all hv's in hv list
 	for hv in ${hv_list} ; do
 		# Select the good fits
-		if [ ${pmt} -lt 5 ] ; then
-			if [ ${hv} -lt 1800 ] ; then
-				llhv=0
-				hllv=1
-			else
-				llhv=1
-				hllv=0
-			fi
-		else
-			if [ ${hv} -lt 1100 ] ; then
-				llhv=0
-				hllv=1
-			else
-				llhv=1
-				hllv=0
-			fi
-		fi
-		./sql_select_fits.sh recent=1 quality=${quality} hv=${hv} pmt=${pmt} llhv=${llhv} hllv=${hllv} >> /dev/null
+		./sql_select_fits.sh recent=1 quality=${quality} hv=${hv} pmt=${pmt} >> /dev/null
 		# Grab the average signal size and average signal rms of the fits
 		out=$(./sql_average.sh column=sig_out)
 		out_rms=$(./sql_average.sh column=sig_rms_out)
@@ -67,7 +50,7 @@ for pmt in ${pmt_list} ; do
 		check_rms=$(echo ${new_rms} | grep .)
 		# Absolute value
 		if [[ ${check_rms:0:1} == "-" ]] ; then
-			check_rms=${check_rms:1}
+			new_rms=${new_rms:1}
 		fi
 		# If values are good
 		if [[ ${check} != "no fits" && ${check:0:1} != "-" ]] ; then

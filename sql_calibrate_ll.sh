@@ -3,8 +3,6 @@
 pmt_list=""
 quality=4
 ll_list="20 30 40 50 90 100"
-llhv=0
-hlhv=0
 
 # Parse input
 for item in $* ; do
@@ -29,20 +27,12 @@ for pmt in ${pmt_list} ; do
 	# Loop through all ll's in ll list
 	for ll in ${ll_list} ; do
 		# Select the good fits
-		if [ ${ll} -lt 90 ] ; then
-			llhv=1
-			hlhv=0
-		else
-			llhv=0
-			hlhv=1
-		fi
-		./sql_select_fits.sh recent=1 quality=${quality} llhv=${llhv} hlhv=${hlhv} run_cond="filter=7" pmt=${pmt} ll=${ll} >> /dev/null
+		./sql_select_fits.sh recent=1 quality=${quality} regime="hv" filter=7 pmt=${pmt} ll=${ll} >> /dev/null
 		# Grab the average PEs per flash from the fits
 		out=$(./sql_average.sh column=mu_out)
 		new_val=${out#*:  (}
 		new_val=${new_val%,*}
 		check=$(echo ${new_val} | grep .)
-		# Absolute value
 		# If values are good
 		if [[ ${check} != "no fits" && ${check:0:1} != "-" ]] ; then
 			# Grab the existing line from the file with this high voltage
