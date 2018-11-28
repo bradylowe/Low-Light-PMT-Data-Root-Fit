@@ -18,9 +18,27 @@ done
 for filter in ${filter_list} ; do
 	# Select the good fits
 	./sql_select_fits.sh recent=1 quality=${quality} hv=${hv} filter=${filter} >> /dev/null
-	# Grab the average signal size and average signal rms of the fits
-	out=$(./sql_average.sh column=mu_out)
-	out_err=$(./sql_average.sh column=mu_out_error)
+	# Grab the average signal size and average signal rms of the good fits
+	mu_out=$(./sql_average.sh column=mu_out | awk -F'(' '{print $3}' | awk -F',' '{print $1}')
+	mu_out_error=$(./sql_average.sh column=mu_out_error | awk -F'(' '{print $3}' | awk -F',' '{print $1}')
+	sig_out=$(./sql_average.sh column=sig_out high-light | awk -F'(' '{print $3}' | awk -F',' '{print $1}')
+	sig_out_error=$(./sql_average.sh column=sig_out_error high-light | awk -F'(' '{print $3}' | awk -F',' '{print $1}')
+	# Grab the gain corresponding to the high light value
+	mu_out=$(./sql_average.sh column=mu_out high-light | awk -F'(' '{print $3}' | awk -F',' '{print $1}')
+	mu_out_error=$(./sql_average.sh column=mu_out_error high-light | awk -F'(' '{print $3}' | awk -F',' '{print $1}')
+
+
+
+
+
+
+
+
+
+
+
+
+
 	new_val=${out#*:  (}
 	new_val=${new_val%,*}
 	new_err=${out_rms#*:  (}

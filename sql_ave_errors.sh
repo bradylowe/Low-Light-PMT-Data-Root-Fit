@@ -2,7 +2,7 @@
 # Get column from command line
 col="gain"
 col_err="gain_percent_error"
-table="fit_result"
+table="fit_results"
 csv_file="selected_fits.csv"
 
 # Parse input

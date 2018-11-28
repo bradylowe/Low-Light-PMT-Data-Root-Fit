@@ -66,8 +66,9 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 ### *run_fit_high_light.sh*
  - This script executes the high light fit macro on all selected_runs.csv.
- - It takes an optional parameter of scale=1 which switches fit to high-range scale.
- - The results of the fit are written to ped_results.txt
+ - If necessary, the fit will run on the high range and multiply all measured values by 8.
+ - Outputs will be stored in fit_high_light table in the gaindb database.
+ - Output pngs will be stored in ${im_dir}/png_high_light.
 
 ### *pedestalfit.c*
  - This macro assumes a sum of three gaussians as the distribution.
