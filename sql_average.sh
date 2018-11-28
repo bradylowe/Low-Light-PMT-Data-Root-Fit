@@ -1,20 +1,21 @@
 
 column="gain"
 table="fit_results"
-regime="all"
+csv_file="selected_fits.csv"
 
 for item in $* ; do
 	name=$(echo ${item} | awk -F'=' '{print $1}')
 	val=${item#${name}=}
 	if [[ ${name} == "column" ]] ; then
 		column=${val}
-	elif [[ ${name} == "regime" ]] ; then
-		regime=${val}
+	elif [[ ${name} == "high-light" ]] ; then
+		table="high_light_results"
+		csv_file="selected_high_light_fits.csv"
 	fi
 done
 
 # Grab selected fits and put commas in there
-list=$(head selected_fits.csv)
+list=$(head ${csv_file})
 if [ ${#list} -eq 0 ] ; then
 	echo no fits
 	exit
