@@ -1,6 +1,6 @@
 
 # Initialize input parameters
-pmt_list="1 2 3 4"
+pmt_list="1 2 3 4 5 6"
 hlhv=0
 llhv=0
 hllv=0
@@ -103,3 +103,4 @@ for pmt in ${pmt_list} ; do
 	fi
 
 done
+./sql_select_runs.sh filter=8 recent=1 good=1 regime=ll

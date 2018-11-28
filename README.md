@@ -86,17 +86,31 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ### *sql_select_runs.sh*
  - This script takes in some sql conditional statements, selects corresponding run_ids, and writes them to selected_runs.csv.
  - Example usage:   ./sql_select_runs.sh fit run_cond="hv=2000&&ll<90"
+ - Through this shell script, we can select the quality of runs we want to see, recent data, or different voltage or light level regimes.
+ - The "regime" parameter is sent in the form regime="_,_" or regime="_" where the "_" are replaced by:
+    * ll for low light
+    * lv for low voltage
+    * hl for high light
+    * hv for high voltage
+ - The "quality" parameter here is just sent in as a flag to select runs with high statistics some light and voltage.
  - Here is a list of possible input parameters as well as possible values:
     * quality
     * recent=1
-    * hvhl=1
     * run_cond="hv>1700&&hv<2000&&gate=100"
+    * regime="ll,hv"
 
 ### *sql_select_fits.sh*
  - This script is just like the above, except it puts fit_ids into selected_fits.csv.
- - If the user sends in either regime=high, then fit_ids from the fit_high_light will be stored in selected_high_light_fits.csv.
+ - If the user sends in the "high-light" flag as a parameter, then the fit_high_light will be used instead (and selected_high_light_fits.csv).
+ - In this script, the quality parameter ranges from 0 to 5 where:
+    * 0 returns all fits from quality data runs
+    * 1 returns the above minus really horrible fits
+    * 2 returns the above with fewer bad fits
+    * 3 returns mainly good fits, but still some bad ones
+    * 4 should only return good fits
+    * 5 returns only 1 fit (the "best" one)
+ - The quality parameter is only set up to be used with the low light fit. The high light fit should be easily sortable with chi2.
  - Here are a couple new parameters from the run_id version:
-    * regime=high
     * quality=5
     * fit_cond="chi<2&&mu_out<5.5"
 

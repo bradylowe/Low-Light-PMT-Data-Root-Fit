@@ -38,9 +38,13 @@ for item in $* ; do
 	# Grab fit_cond value
 	elif [[ ${name} == "fit_cond" ]] ; then
 		fit_cond="${fit_cond} AND ${val}"
-	# Return fit_ids from low light fit
+	# Divide all data into low/high light and voltage regimes
 	elif [[ ${name} == "regime" ]] ; then
 		regime=${val}
+	# Use high light fitter instead 
+	elif [[ ${name} == "high-light" ]] ; then
+		table="high_light_results"
+		outfile="selected_high_light_fits.csv"
 	# Select the quality of fits here
 	elif [[ ${name} == "quality" ]] ; then
 		run_cond="${run_cond} AND ${good_runs}"
@@ -82,17 +86,11 @@ if [[ ${regime} != "all" ]] ; then
 	# Check for low light regime
 	check=$(echo ${regime} | grep "ll")
 	if [ ${#check} -gt 0 ] ; then
-		id_type="fit_id"
-		table="fit_results"
-		outfile="selected_fits.csv"
 		run_cond="${run_cond} AND ${low_light}"
 	fi
 	# Check for high light regime
 	check=$(echo ${regime} | grep "hl")
 	if [ ${#check} -gt 0 ] ; then
-		id_type="fit_id"
-		table="high_light_results"
-		outfile="selected_high_light_fits.csv"
 		run_cond="${run_cond} AND ${high_light}"
 	fi
 	# Check for low voltage regime
@@ -106,6 +104,8 @@ if [[ ${regime} != "all" ]] ; then
 		run_cond="${run_cond} AND ${high_voltage}"
 	fi
 fi
+
+
 
 
 ############################# Query database, write results to output file
