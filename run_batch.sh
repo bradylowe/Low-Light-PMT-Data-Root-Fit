@@ -54,16 +54,16 @@ for pmt in ${pmt_list} ; do
 	# LOW-light LOW-voltage (used to attempt to measure gain)
 	if [ ${lllv} -eq 1 ] ; then
 		# Select the low light, low gain runs
-		./sql_select_runs.sh regime="ll,lv" pmt=${pmt} quality recent=1 
+		./sql_select_runs.sh pmt=${pmt} regime="ll,lv" quality recent=1 
 		./run_fit_pmt.sh conGain=20 conLL=2
-		./sql_select_runs.sh regime="ll,lv" pmt=${pmt} quality recent=1 
+		./sql_select_runs.sh pmt=${pmt} regime="ll,lv" quality recent=1 
 		./run_fit_pmt.sh conGain=20 conLL=2 noExpo=1
 		if [ ${extra_fits} -eq 1 ] ; then
-			./sql_select_runs.sh regime="ll,lv" pmt=${pmt} quality recent=1 
+			./sql_select_runs.sh pmt=${pmt} regime="ll,lv" quality recent=1 
 			./run_fit_pmt.sh conGain=20 conLL=0
-			./sql_select_runs.sh regime="ll,lv" pmt=${pmt} quality recent=1 
+			./sql_select_runs.sh pmt=${pmt} regime="ll,lv" quality recent=1 
 			./run_fit_pmt.sh conGain=20 conLL=0 noExpo=1
-			./sql_select_runs.sh regime="ll,lv" pmt=${pmt} quality recent=1 
+			./sql_select_runs.sh pmt=${pmt} regime="ll,lv" quality recent=1 
 			./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
 		fi
 	fi
@@ -71,16 +71,16 @@ for pmt in ${pmt_list} ; do
 	# HIGH-light HIGH-voltage (used to measure light level)
 	if [ ${hlhv} -eq 1 ] ; then
 		# Select the high light, high gain runs
-		./sql_select_runs.sh regime="hl,hv" pmt=${pmt} quality recent=1
+		./sql_select_runs.sh pmt=${pmt} regime="hl,hv" quality recent=1
 		./run_fit_pmt.sh conGain=1 conLL=20
-		./sql_select_runs.sh regime="hl,hv" pmt=${pmt} quality recent=1
+		./sql_select_runs.sh pmt=${pmt} regime="hl,hv" quality recent=1
 		./run_fit_pmt.sh conGain=1 conLL=20 noExpo=1
 		if [ ${extra_fits} -eq 1 ] ; then
-			./sql_select_runs.sh regime="hl,hv" pmt=${pmt} quality recent=1
+			./sql_select_runs.sh pmt=${pmt} regime="hl,hv" quality recent=1
 			./run_fit_pmt.sh conGain=0 conLL=20 noExpo=1
-			./sql_select_runs.sh regime="hl,hv" pmt=${pmt} quality recent=1
+			./sql_select_runs.sh pmt=${pmt} regime="hl,hv" quality recent=1
 			./run_fit_pmt.sh conGain=20 conLL=2 noExpo=1
-			./sql_select_runs.sh regime="hl,hv" pmt=${pmt} quality recent=1
+			./sql_select_runs.sh pmt=${pmt} regime="hl,hv" quality recent=1
 			./run_fit_pmt.sh conGain=10 conLL=10
 		fi
 	fi
@@ -88,16 +88,16 @@ for pmt in ${pmt_list} ; do
 	# HIGH-light LOW-voltage (used to measure gain)
 	if [ ${hllv} -eq 1 ] ; then
 		# Select the high light, low gain runs
-		./sql_select_runs.sh regime="hl,lv" pmt=${pmt} quality recent=1
+		./sql_select_runs.sh pmt=${pmt} regime="hl,lv" quality recent=1
 		./run_fit_pmt.sh conGain=20 conLL=1
-		./sql_select_runs.sh regime="hl,lv" pmt=${pmt} quality recent=1
+		./sql_select_runs.sh pmt=${pmt} regime="hl,lv" quality recent=1
 		./run_fit_pmt.sh conGain=20 conLL=1 noExpo=1
 		if [ ${extra_fits} -eq 1 ] ; then
-			./sql_select_runs.sh regime="hl,lv" pmt=${pmt} quality recent=1
+			./sql_select_runs.sh pmt=${pmt} regime="hl,lv" quality recent=1
 			./run_fit_pmt.sh conGain=20 conLL=0
-			./sql_select_runs.sh regime="hl,lv" pmt=${pmt} quality recent=1
+			./sql_select_runs.sh pmt=${pmt} regime="hl,lv" quality recent=1
 			./run_fit_pmt.sh conGain=20 conLL=0 noExpo=1
-			./sql_select_runs.sh regime="hl,lv" pmt=${pmt} quality recent=1
+			./sql_select_runs.sh pmt=${pmt} regime="hl,lv" quality recent=1
 			./run_fit_pmt.sh conGain=10 conLL=10 noExpo=1
 		fi
 	fi
