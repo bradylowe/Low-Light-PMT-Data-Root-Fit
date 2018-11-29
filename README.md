@@ -210,6 +210,10 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - Some parameters we need to record include high-voltage, run number, light level, ADC channel, etc. - Simply execute ./enter_run_params.sh and you will be prompted for values.
  - NOTE:  some values are hard-coded for convenience that ALMOST never change...
 
+### *saved_runs*
+ - This directory houses some csv files that store run_ids.
+ - Each file stores a group of related run_ids with explanatory filename.
+
 ### *docs*
  - This directory contains documentation about measuring the gain of PMTs.
  - Summary of files:
