@@ -88,6 +88,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This script takes in some sql conditional statements, selects corresponding run_ids, and writes them to selected_runs.csv.
  - Example usage:   ./sql_select_runs.sh fit run_cond="hv=2000&&ll<90"
  - Through this shell script, we can select the quality of runs we want to see, recent data, or different voltage or light level regimes.
+ - NOTE: pmt argument must be specified BEFORE the regime argument.
  - The "regime" parameter is sent in the form regime="_,_" or regime="_" where the "_" are replaced by:
     * ll for low light
     * lv for low voltage
