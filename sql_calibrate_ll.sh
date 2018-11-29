@@ -2,7 +2,7 @@
 # Initialize input parameters
 pmt_list=""
 quality=4
-ll_list="20 30 40 50 90 100"
+ll_list="20 30 40 50 60 70 80 90 100"
 
 # Parse input
 for item in $* ; do
