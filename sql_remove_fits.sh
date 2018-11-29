@@ -21,30 +21,27 @@ fi
 
 # Grab the selected fits
 fits=$(head ${csv_file})
-fits_space=$(head ${csv_file} | sed "s/,/ /g")
-for id in ${fits_space} ; do
-	if [[ ${table} == "fit_results" ]] ; then
-		# Delete associated pngs
-		query="USE gaindb; SELECT CONCAT('${im_dir}/', human_png) FROM ${table} WHERE fit_id=${id} AND human_png IS NOT NULL;"
-		files=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-		if [ ${#files} -gt 0 ] ; then
-			rm ${files}
-		fi
-		# Delete associated nn pngs
-		query="USE gaindb; SELECT CONCAT('${im_dir}/', nn_png) FROM ${table} WHERE fit_id=${id} AND nn_png IS NOT NULL;"
-		files=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-		if [ ${#files} -gt 0 ] ; then
-			rm ${files}
-		fi
-	elif [[ ${table} == "high_light_results" ]] ; then
-		# Delete associated pngs
-		query="USE gaindb; SELECT CONCAT('${im_dir}/', png_file) FROM ${table} WHERE fit_id=${id} AND png_file IS NOT NULL;"
-		files=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-		if [ ${#files} -gt 0 ] ; then
-			rm ${files}
-		fi
+if [[ ${table} == "fit_results" ]] ; then
+	# Delete associated pngs
+	query="USE gaindb; SELECT CONCAT('${im_dir}/', human_png) FROM ${table} WHERE fit_id IN (${fits}) AND human_png IS NOT NULL;"
+	files=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+	if [ ${#files} -gt 0 ] ; then
+		rm ${files}
 	fi
-done
+	# Delete associated nn pngs
+	query="USE gaindb; SELECT CONCAT('${im_dir}/', nn_png) FROM ${table} WHERE fit_id IN (${fits}) AND nn_png IS NOT NULL;"
+	files=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+	if [ ${#files} -gt 0 ] ; then
+		rm ${files}
+	fi
+elif [[ ${table} == "high_light_results" ]] ; then
+	# Delete associated pngs
+	query="USE gaindb; SELECT CONCAT('${im_dir}/', png_file) FROM ${table} WHERE fit_id IN (${fits}) AND png_file IS NOT NULL;"
+	files=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+	if [ ${#files} -gt 0 ] ; then
+		rm ${files}
+	fi
+fi
 
 # Delete rows from table
 mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; DELETE FROM ${table} WHERE fit_id IN (${fits});"
