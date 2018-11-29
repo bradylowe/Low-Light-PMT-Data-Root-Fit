@@ -214,7 +214,7 @@ double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t s
 	ofstream sqlfile;
 	char queryLine[2048];
 	sprintf(queryLine,
-		"run_id='%d',ped_out='%.8f',ped_rms_out='%.8f',ped_out_error='%.8f',ped_rms_out_error='%.8f',sig_out='%.8f',sig_rms_out='%.8f',sig_out_error='%.8f',sig_rms_out_error='%.8f',alpha_out='%.8f',alpha_out_error='%.8f',scale='%d',chi='%d',png_file='%s'",
+		"run_id='%d',ped_out='%.8f',ped_rms_out='%.8f',ped_out_error='%.8f',ped_rms_out_error='%.8f',sig_out='%.8f',sig_rms_out='%.8f',sig_out_error='%.8f',sig_rms_out_error='%.8f',alpha_out='%.8f',alpha_out_error='%.8f',scale='%d',chi='%d',png_file='png_high_light/%s'",
 		runID, 
 		ped, pedrms, pederr, pedrmserr,
 		sig, sigrms, sigerr, sigrmserr,

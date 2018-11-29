@@ -197,10 +197,10 @@ for cur_id in ${run_list} ; do
 		query="USE gaindb; UPDATE fit_results SET $(head -n 1 ${sqlfile})"
 		# If we are saving png output, update database with absolute file path
 		if [ ${savePNG} -gt 0 ] ; then
-			query="${query},human_png='${bothpng}'"
+			query="${query},human_png='png_fit/${bothpng}'"
 		fi 
 		if [ ${saveNN} -gt 0 ] ; then
-			query="${query},nn_png='${nnpng}'"
+			query="${query},nn_png='png_fit_nn/${nnpng}'"
 		fi 
 		query="${query} WHERE fit_id=${fitID};"
 		# We don't want anything that is "not a number"
