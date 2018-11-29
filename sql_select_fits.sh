@@ -7,6 +7,7 @@ table="fit_results"
 outfile="selected_fits.csv"
 regime="all"
 pmt=0
+daq=3
 
 # Define high/low voltage regimes
 high_voltage="hv>=1600"
@@ -45,6 +46,9 @@ for item in $* ; do
 	elif [[ ${name} == "high-light" ]] ; then
 		table="high_light_results"
 		outfile="selected_high_light_fits.csv"
+	# Grab daq
+	elif [[ ${name} == "daq" ]] ; then
+		run_cond="${run_cond} AND daq=${val}"
 	# Select the quality of fits here
 	elif [[ ${name} == "quality" ]] ; then
 		run_cond="${run_cond} AND ${good_runs}"
@@ -109,7 +113,6 @@ fi
 
 
 ############################# Query database, write results to output file
-# Create the query from condition
 query="USE gaindb; SELECT run_id FROM run_params WHERE ${run_cond};"
 ret=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
 # Make result comma-separated list

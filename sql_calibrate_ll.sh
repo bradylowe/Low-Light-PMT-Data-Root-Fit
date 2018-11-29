@@ -3,6 +3,8 @@
 pmt_list=""
 quality=4
 ll_list="20 30 40 50 60 70 80 90 100"
+ll_begin=20
+ll_end=100
 
 # Parse input
 for item in $* ; do
@@ -13,6 +15,8 @@ for item in $* ; do
 		pmt_list=${val}
 	elif [[ ${name} = "ll" ]] ; then
 		ll_list=${val}
+		ll_begin=${val}
+		ll_end=$((val + 1))
 	elif [[ ${name} = "quality" ]] ; then
 		quality=${val}
 	fi
@@ -25,9 +29,10 @@ for pmt in ${pmt_list} ; do
 	csv_file="calibration/pmt${pmt}_ll.csv"
 
 	# Loop through all ll's in ll list
-	for ll in ${ll_list} ; do
+	ll=${ll_begin}
+	while [ ${ll} -lt ${ll_end} ] ; do
 		# Select the good fits
-		./sql_select_fits.sh recent=1 quality=${quality} regime="hv" filter=7 pmt=${pmt} ll=${ll} >> /dev/null
+		./sql_select_fits.sh quality=${quality} regime="hv" filter=7 pmt=${pmt} ll=${ll} >> /dev/null
 		# Grab the average PEs per flash from the fits
 		out=$(./sql_average.sh column=mu_out)
 		new_val=${out#*:  (}
@@ -50,5 +55,6 @@ for pmt in ${pmt_list} ; do
 				fi
 			fi
 		fi
+		ll=$((ll + 1))
 	done
 done

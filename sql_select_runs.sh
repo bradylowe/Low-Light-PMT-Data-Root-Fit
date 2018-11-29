@@ -6,6 +6,7 @@ table="run_params"
 outfile="selected_runs.csv"
 regime="all"
 pmt=0
+daq=3
 
 # Define high/low voltage regimes
 high_voltage="hv>=1600"
@@ -37,6 +38,9 @@ for item in $* ; do
 	# Grab data regime (light level and voltage)
 	elif [[ ${name} == "regime" ]] ; then
 		regime=${val}
+	# Grab daq setting
+	elif [[ ${name} == "daq" ]] ; then
+		run_cond="${run_cond} AND daq=${val}"
 	# Grab pmt
 	elif [[ ${name} == "pmt" ]] ; then
 		pmt=${val}
