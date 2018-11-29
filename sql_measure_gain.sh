@@ -37,7 +37,7 @@ for pmt in ${pmt_list} ; do
 	echo pmt ${pmt}
 	echo ================================
 	for hv in ${hv_list} ; do
-		nfits=$(./sql_select_fits.sh regime=${regime} recent=1 quality=${quality} hv=${hv} pmt=${pmt} | awk '{print $1}')
+		nfits=$(./sql_select_fits.sh pmt=${pmt} regime=${regime} recent=1 quality=${quality} hv=${hv} | awk '{print $1}')
 		if [ ${nfits} -eq 0 ] ; then
 			continue
 		fi

@@ -28,7 +28,7 @@ for pmt in ${pmt_list} ; do
 	echo ==================================
 	# Loop through all ll's for this pmt
 	for ll in ${ll_list} ; do
-		./sql_select_fits.sh regime=${regime} run_cond="filter=7" ll=${ll} pmt=${pmt} quality=${quality} recent=1
+		./sql_select_fits.sh pmt=${pmt} regime=${regime} run_cond="filter=7" ll=${ll} quality=${quality} recent=1
 		echo ll = ${ll}
 		./sql_ave_errors.sh mu_out
 		echo ---

@@ -38,7 +38,7 @@ for pmt in ${pmt_list} ; do
 	# Loop through all hv's in hv list
 	for hv in ${hv_list} ; do
 		# Select the good fits
-		./sql_select_fits.sh recent=1 quality=${quality} hv=${hv} pmt=${pmt} >> /dev/null
+		./sql_select_fits.sh pmt=${pmt} recent=1 quality=${quality} hv=${hv} >> /dev/null
 		# Grab the average signal size and average signal rms of the fits
 		out=$(./sql_average.sh column=sig_out)
 		out_rms=$(./sql_average.sh column=sig_rms_out)
