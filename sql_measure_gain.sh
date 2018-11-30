@@ -1,7 +1,7 @@
 
 # Initialize input parameters
 pmt_list=""
-quality=2
+quality=3
 regime="all"
 
 # Parse input
@@ -32,19 +32,30 @@ for pmt in ${pmt_list} ; do
 		hv_list=${hv}
 	fi
 
+	# Clear files for making plot of output
+	rm x_file.txt
+	rm y_file.txt
+	rm ex_file.txt
+	rm ey_file.txt
+	rm pmt${pmt}_gain.txt
 	# Loop through all hv's in hv list
-	echo
-	echo pmt ${pmt}
-	echo ================================
 	for hv in ${hv_list} ; do
 		nfits=$(./sql_select_fits.sh pmt=${pmt} regime=${regime} recent=1 quality=${quality} hv=${hv} | awk '{print $1}')
 		if [ ${nfits} -eq 0 ] ; then
 			continue
 		fi
-		echo hv: ${hv}
-		./sql_ave_errors.sh
+		ret=$(./sql_ave_errors.sh error=gain_error)
+		gain=$(echo ${ret} | awk -F'(' '{print $3}')
+		gain=${gain%,*}
+		gain_error=$(echo ${ret} | awk -F'(' '{print $5}')
+		gain_error=${gain_error%,*}
+		echo "gain (${hv}V): ${gain} +/- ${gain_error}" >> pmt${pmt}_gain.txt
+		echo ${hv} >> x_file.txt
+		echo ${gain} >> y_file.txt
+		echo "5.0" >> ex_file.txt
+		echo ${gain_error} >> ey_file.txt
 		#./sql_ave_errors.sh sig_out
-		echo ---
 	done
-	echo ================================
+
+	root -l "make_gain_plot_error.c()"
 done
