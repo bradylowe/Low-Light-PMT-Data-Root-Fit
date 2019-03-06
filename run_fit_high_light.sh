@@ -30,7 +30,7 @@ for cur_id in ${files} ; do
 	if [ -f ${sqlfile} -a ${noSQL} -eq 0 ] ; then
 		# Move the images to the storage directories
 		if [ ${savePNG} -gt 0 ] ; then
-			mv high_light_${fit_id}.png ${im_dir}/png_high_light/.
+			mv high_light_${cur_id}.png ${im_dir}/png_high_light/.
 		fi
 		# Initialize the update query
 		query="USE gaindb; UPDATE high_light_results SET $(head -n 1 ${sqlfile})"

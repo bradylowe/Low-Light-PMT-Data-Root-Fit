@@ -10,7 +10,7 @@
 #include <TF1.h>
 
 #include "Math/SpecFunc.h"
-#include "dataAnalyzer.c"
+#include "fit_pmt_functions.c"
 
 #include <TMinuit.h>
 #include <TApplication.h>

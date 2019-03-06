@@ -1,7 +1,7 @@
 
 # Get column from command line
 col="gain"
-col_err="gain_percent_error"
+col_err=""
 table="fit_results"
 csv_file="selected_fits.csv"
 
@@ -18,6 +18,10 @@ for item in $* ; do
 		csv_file="selected_high_light_fits.csv"
 	fi
 done
+
+if [ ${#col_err} -eq 0 ] ; then
+	col_err="${col}_error"
+fi
 
 # Grab selected fits and put commas in there
 list=$(head ${csv_file})

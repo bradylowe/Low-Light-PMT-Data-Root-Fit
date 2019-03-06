@@ -12,7 +12,7 @@
 #include <fstream>
 
 #include "Math/SpecFunc.h"
-#include "dataAnalyzer.c"
+#include "fit_pmt_functions.c"
 
 #include <TMinuit.h>
 #include <TApplication.h>
@@ -22,17 +22,12 @@
 #include <TLine.h>
 
 
-void make_plot(Int_t files = -1) {
+void make_plot(string color = "black", string title = "Title", string x_title = "X-axis", string y_title = "Y-axis") {
 	
 	// Open files to read in values
 	ifstream x_file, y_file;
-	if (files == -1) {
-		x_file.open("x_file.txt");
-		y_file.open("y_file.txt");
-	} else {
-		x_file.open(Form("x_file_%d.txt", files));
-		y_file.open(Form("y_file_%d.txt", files));
-	}
+	x_file.open(Form("x_file_%s.txt", color.c_str()));
+	y_file.open(Form("y_file_%s.txt", color.c_str()));
 
 	// Define arrays
 	const int array_size = 100000;
@@ -58,6 +53,10 @@ void make_plot(Int_t files = -1) {
 
 	// Make plot
 	TGraph *gr1 = new TGraph(count, x_array, y_array);
+        gr1->SetTitle(title.c_str());
+        gr1->GetXaxis()->SetTitle(x_title.c_str());
+        gr1->GetYaxis()->SetTitle(y_title.c_str());
 	TCanvas *c1 = new TCanvas("c1", "Graph", 200, 10, 1000, 618);
+	gr1->SetTitle("Title");
 	gr1->Draw("A*");
 }

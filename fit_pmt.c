@@ -5,12 +5,14 @@
 #include <TTree.h>
 #include <TROOT.h>
 #include <TMath.h>
+#include <TRandom.h>
 #include <TChain.h>
 #include <TH1F.h>
 #include <TF1.h>
 
 #include "Math/SpecFunc.h"
-#include "dataAnalyzer.c"
+#include "fit_pmt_functions.c"
+#include "root_models.c"
 
 #include <TMinuit.h>
 #include <TApplication.h>
@@ -18,6 +20,10 @@
 #include <TStyle.h>
 #include <TAxis.h>
 #include <TLine.h>
+
+
+// Toggle changes in functionality
+int draw_legend = 0;
 
 
 // FIT A DATA RUN TO FIND THE CONTRIBUTING INDIVIDUAL 
@@ -41,11 +47,13 @@ int fit_pmt(
 	Int_t hv, 		// High voltage used
 	Int_t ll, 		// Light level used (light level 4,60 becomes 46)
 	Int_t filter, 		// Filter used (0 - 8)(0 is closed shutter)
+	Int_t adc_range,	// Look at high-range of ADC
 	// These params can be used to force the function onto solutions.
 	// conGain = 0 means that the fit has 0% wiggle room to deviate from sig0.
 	// conGain = 100 means that it can use the range 0 to  2 * sig0)
 	// conGain = 200 means that it can use the range 0 to  3 * sig0)
-	Int_t conGain, Int_t conLL, Int_t conInj, Int_t noExpo,
+	Int_t conGain, Int_t conLL, Int_t conInj, 
+	Int_t noExpo, Int_t randomChanges,
 	// These params are some functionality flags
 	Int_t saveResults, 	// Save output png with stats
 	Int_t saveNN, 		// Save neural network output png and txt
@@ -122,6 +130,7 @@ int fit_pmt(
         char chanStr[32];
         char selection[64];
         sprintf(chanStr, "ADC%dl", chan);
+	if ( adc_range == 1) sprintf(chanStr, "ADC%dh", chan);
         sprintf(selection, "%s>2&&%s<%d", chanStr, chanStr, MAX_BIN);
 
         // Create leaf and branch from tree
@@ -157,9 +166,35 @@ int fit_pmt(
                 h_QDC->SetBinError(curBin, sqrt(curVal) / sum);
         }
 
-	// Define fitting function
-	TF1 *fit_func=new TF1("fit_func", the_real_deal_yx, 0, MAX_BIN,N_FIT_PARAMS); 
+	// Setup histogram for printing
+        h_QDC->GetXaxis()->SetTitle("ADC channels");
+        h_QDC->GetYaxis()->SetTitle("Counts (integral normalized)");
+        h_QDC->SetTitle(Form("Low-light PE fit of r%d", runNum));
+	h_QDC->SetLineColor(1);
+	h_QDC->SetMarkerSize(0.7);
+	h_QDC->SetMarkerStyle(20);
+	h_QDC->GetXaxis()->SetTitle("QDC channel");
+	h_QDC->GetYaxis()->SetTitle("Normalized yield");
+	h_QDC->GetXaxis()->SetRangeUser(low, high);
 	
+	// Create canvas and draw histogram
+	TCanvas *can = new TCanvas("can","can");
+	can->cd();
+	gStyle->SetOptFit(1);
+	TGaxis::SetMaxDigits(3);
+	h_QDC->Draw();
+
+	// Define legend
+	TLegend* legend = new TLegend(0.1, 0.7, 0.48, 0.9);
+
+	// Define fitting function
+	TF1 *fit_func;
+	if (noExpo < 2) {
+		fit_func = new TF1("fit_func", low_light_model, 0, MAX_BIN,N_FIT_PARAMS); 
+	} else {
+		fit_func = new TF1("fit_func", low_light_pmt_model_without_expo_in_pedestal, 0, MAX_BIN,N_FIT_PARAMS); 
+	}
+
 	fit_func->SetLineColor(4); // Dark blue
 	fit_func->SetNpx(2000);
 	fit_func->SetLineWidth(2);
@@ -189,28 +224,6 @@ int fit_pmt(
 			else fit_func->SetParLimits(i, min[i], max[i]);
 		}
 	}
-
-	// Fit to pedestal
-	TF1 *fit_gaus_ped = new TF1("fit_gaus_ped", "gaus", initial[1] - initial[2], initial[1] + initial[2]);
-	h_QDC->Fit(fit_gaus_ped, "RN", "");
-
-	// Setup histogram for printing
-        h_QDC->GetXaxis()->SetTitle("ADC channels");
-        h_QDC->GetYaxis()->SetTitle("Counts (integral normalized)");
-        h_QDC->SetTitle(Form("Low-light PE fit of r%d", runNum));
-	h_QDC->SetLineColor(1);
-	h_QDC->SetMarkerSize(0.7);
-	h_QDC->SetMarkerStyle(20);
-	h_QDC->GetXaxis()->SetTitle("QDC channel");
-	h_QDC->GetYaxis()->SetTitle("Normalized yield");
-	h_QDC->GetXaxis()->SetRangeUser(low, high);
-	
-	// Create canvas and draw histogram
-	TCanvas *can = new TCanvas("can","can");
-	can->cd();
-	gStyle->SetOptFit(1);
-	TGaxis::SetMaxDigits(3);
-	h_QDC->Draw("same");
 
 	// Define results pointer
 	TFitResultPtr res;
@@ -249,6 +262,7 @@ int fit_pmt(
 	}
 
 	// Create vector and grab return parameters
+	legend->AddEntry(fit_func, "Total fit", "l");
 	Double_t back[N_FIT_PARAMS];
 	fit_func->GetParameters(back);
 
@@ -259,21 +273,29 @@ int fit_pmt(
 		// Set current PE peak in consideration
 		fit_func->GetParameters(back);
 		back[9] = (double)(bb);
-        	fis_from_fit_pe[bb] = new TF1(Form("pe_fit_%d", bb), the_real_deal_yx_pe, 0, MAX_BIN, N_FIT_PARAMS);
+        	fis_from_fit_pe[bb] = new TF1(Form("pe_fit_%d", bb), low_light_model_pe, 0, MAX_BIN, N_FIT_PARAMS);
         	fis_from_fit_pe[bb]->SetParameters(back);
         	fis_from_fit_pe[bb]->SetLineStyle(2);
 		fis_from_fit_pe[bb]->SetLineColor(2);
 		fis_from_fit_pe[bb]->SetNpx(2000);
 		fis_from_fit_pe[bb]->Draw("same");
+		if (bb == minPE) legend->AddEntry(fis_from_fit_pe[bb], "PE distributions", "l");
 	}
 
 	// Make background distribution function for printing for user
-	TF1 *fis_from_fit_bg = new TF1("fis_from_fit_bg", the_real_deal_yx_bg, 0, MAX_BIN, N_FIT_PARAMS);
+	TF1 *fis_from_fit_bg;
+	if (noExpo < 2) {
+		fis_from_fit_bg = new TF1("fis_from_fit_bg", low_light_model_bg, 0, MAX_BIN, N_FIT_PARAMS);
+	} else {
+		fis_from_fit_bg = new TF1("fis_from_fit_bg", low_light_model_bg_no_expo, 0, MAX_BIN, N_FIT_PARAMS);
+	}
 	fis_from_fit_bg->SetParameters(back);
         fis_from_fit_bg->SetLineStyle(2);
         fis_from_fit_bg->SetLineColor(7); // Cyan
         fis_from_fit_bg->SetNpx(2000);
 	fis_from_fit_bg->Draw("same");
+	legend->AddEntry(fis_from_fit_bg, "Pedestal", "l");
+	if (draw_legend > 0) legend->Draw();
 
 ////////////////////////////////////////////////////////////
 /////////////	DONE FITTING	////////////////////////////
@@ -286,15 +308,15 @@ int fit_pmt(
 	Int_t nfitpoints = fit_func->GetNumberFitPoints();
 
 	// Get output values
-	Double_t wout = back[0];
-	Double_t pedout = back[1];
-	Double_t pedrmsout = back[2];
-	Double_t alphaout = back[3];
-	Double_t muout = back[4];
-	Double_t sigout = back[5];
-	Double_t sigrmsout = back[6];
-	Double_t injout = back[7];
-	Double_t realout = back[8];
+	Double_t wout = fit_func->GetParameter(0);
+	Double_t pedout = fit_func->GetParameter(1);
+	Double_t pedrmsout = fit_func->GetParameter(2);
+	Double_t alphaout = fit_func->GetParameter(3);
+	Double_t muout = fit_func->GetParameter(4);
+	Double_t sigout = fit_func->GetParameter(5);
+	Double_t sigrmsout = fit_func->GetParameter(6);
+	Double_t injout = fit_func->GetParameter(7);
+	Double_t realout = fit_func->GetParError(8);
 	Double_t wouterr = fit_func->GetParError(0);
 	Double_t pedouterr = fit_func->GetParError(1);
 	Double_t pedrmsouterr = fit_func->GetParError(2);
@@ -315,7 +337,7 @@ int fit_pmt(
 	Double_t gainPercentError = gainError / gain * 100.0;
 
 	// Set title of graph to display gain measurement
-        h_QDC->SetTitle(Form("gain (%dV): (%.4f, %.4f, %.1f%%)", hv, gain, gainError, gainPercentError));
+        h_QDC->SetTitle(Form("gain (%dV, pmt %d): (%.4f, %.4f, %.1f%%)", hv, pmt, gain, gainError, gainPercentError));
 
 	// DEFINE USER IMAGE FILE AND NN IMAGE FILE
 	char humanPNG[256];
@@ -366,7 +388,7 @@ int fit_pmt(
 	ofstream file;
 	char queryLine[2048];
 	sprintf(queryLine, 
-		"run_id='%d',fit_engine='%d',fit_low='%d',fit_high='%d',min_pe='%d',max_pe='%d',w_0='%f',ped_0='%f',ped_rms_0='%f',alpha_0='%f',mu_0='%f',sig_0='%f',sig_rms_0='%f',inj_0='%f',real_0='%f',w_min='%f',ped_min='%f',ped_rms_min='%f',alpha_min='%f',mu_min='%f',sig_min='%f',sig_rms_min='%f',inj_min='%f',real_min='%f',w_max='%f',ped_max='%f',ped_rms_max='%f',alpha_max='%f',mu_max='%f',sig_max='%f',sig_rms_max='%f',inj_max='%f',real_max='%f',w_out='%f',ped_out='%f',ped_rms_out='%f',alpha_out='%f',mu_out='%f',sig_out='%f',sig_rms_out='%f',inj_out='%f',real_out='%f',w_out_error='%f',ped_out_error='%f',ped_rms_out_error='%f',alpha_out_error='%f',mu_out_error='%f',sig_out_error='%f',sig_rms_out_error='%f',inj_out_error='%f',real_out_error='%f',chi='%f',gain='%f',gain_error='%f',gain_percent_error='%f',con_gain='%d', con_ll='%d', con_inj='%d', no_expo='%d'",
+		"run_id='%d',fit_engine='%d',fit_low='%d',fit_high='%d',min_pe='%d',max_pe='%d',w_0='%f',ped_0='%f',ped_rms_0='%f',alpha_0='%f',mu_0='%f',sig_0='%f',sig_rms_0='%f',inj_0='%f',real_0='%f',w_min='%f',ped_min='%f',ped_rms_min='%f',alpha_min='%f',mu_min='%f',sig_min='%f',sig_rms_min='%f',inj_min='%f',real_min='%f',w_max='%f',ped_max='%f',ped_rms_max='%f',alpha_max='%f',mu_max='%f',sig_max='%f',sig_rms_max='%f',inj_max='%f',real_max='%f',w_out='%f',ped_out='%f',ped_rms_out='%f',alpha_out='%f',mu_out='%f',sig_out='%f',sig_rms_out='%f',inj_out='%f',real_out='%f',w_out_error='%f',ped_out_error='%f',ped_rms_out_error='%f',alpha_out_error='%f',mu_out_error='%f',sig_out_error='%f',sig_rms_out_error='%f',inj_out_error='%f',real_out_error='%f',chi='%f',gain='%f',gain_error='%f',gain_percent_error='%f',con_gain='%d', con_ll='%d', con_inj='%d', no_expo='%d', random_changes='%d'",
 		runID, fitEngine, lowRangeThresh, highRangeThresh, minPE, maxPE,
 		w0, ped0, pedrms0, alpha0, mu0, sig0, sigrms0, inj0, real0,
         	wmin, pedmin, pedrmsmin, alphamin, mumin, sigmin, sigrmsmin, injmin, realmin,
@@ -374,7 +396,7 @@ int fit_pmt(
         	wout, pedout, pedrmsout, alphaout, muout, sigout, sigrmsout, injout, realout,
         	wouterr, pedouterr, pedrmsouterr, alphaouterr, muouterr, sigouterr, sigrmsouterr, injouterr, realouterr,
         	chi/double(ndf), gain, gainError, gainPercentError,
-		conGain, conLL, conInj, noExpo
+		conGain, conLL, conInj, noExpo, randomChanges
 	);
 	file.open(Form("sql_output_%d.csv", fitID), std::ofstream::out);
 	if (file.is_open()) {

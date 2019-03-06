@@ -18,7 +18,7 @@
 #include <TLine.h>
 
 
-double fit_pedestal(string rootFile, Int_t choice = 1, Int_t scale = 0) {
+double fit_pedestal(string rootFile, Int_t scale = 0, Int_t choice = 1) {
 
 	// Define canvas
 	gStyle->SetOptFit(11111111);
@@ -44,9 +44,11 @@ double fit_pedestal(string rootFile, Int_t choice = 1, Int_t scale = 0) {
 
 	// Define tree, leaf, branch
 	TTree *tree = (TTree *) file->Get("ntuple");
+	//TTree *tree = (TTree *) file->Get("T");
 	TLeaf *leaf;
 	if (scale == 0) {leaf = tree->GetLeaf(Form("ADC%dl", 12));}
 	else {leaf = tree->GetLeaf(Form("ADC%dh", 12));}
+	//leaf = tree->GetLeaf(Form("sbs.sbuscint.hadc%d", 2));
 	TBranch *branch = leaf->GetBranch();
 
 	// Fill raw data histogram

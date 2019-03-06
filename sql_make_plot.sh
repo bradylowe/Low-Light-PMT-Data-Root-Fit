@@ -1,6 +1,7 @@
 
 # PRINT HELP #
-##############
+#############################################################################
+#############################################################################
 # Get all column names
 query="USE gaindb; SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS"
 query="${query} WHERE TABLE_SCHEMA = 'gaindb' AND TABLE_NAME = 'run_params' ;"
@@ -20,106 +21,168 @@ if [[ $1 == "help" ]] ; then
 	echo
 	exit
 fi
+#############################################################################
+#############################################################################
 
-######################################################################
 
-# Initialize input parameters
-pmt_list=""
-quality=4
+# Initialize variables
+current_color_index=1
+high_light=""
 x="hv"
 y="gain"
+x_error=0.0
+y_error=""
+z="fit_engine"
+z_values="0"
+z_names=""
+z_title=""
+z_round=0
+log_x=0
+log_y=0
 e=""
-table="fit_results"
+color="black"
+colors_used=""
+z_colors="black,red,blue,purple,green,yellow,orange,cyan"
+z_markers="cross,circle,star,star,star,star,star,star,star,star"
+z_markers="dot,cross,cross3,star,star2,diamond,splat,splat,splat,splat,splat,splat,splat"
+png_file=""
 csv_file="selected_fits.csv"
+fit_list=$(head ${csv_file})
+delete=1
 
 # Parse input
 for item in $* ; do
         # Decompose input
         name=$(echo ${item} | awk -F'=' '{print $1}')
         val=${item#${name}=}
-        if [[ ${name} == "pmt" ]] ; then
-                pmt_list=${val}
-        elif [[ ${name} == "x" ]] ; then
+        if [[ ${name} == "x" ]] ; then
                 x=${val}
         elif [[ ${name} == "y" ]] ; then
                 y=${val}
+        elif [[ ${name} == "x_error" ]] ; then
+                x_error=${val}
+        elif [[ ${name} == "y_error" ]] ; then
+                y_error=${val}
+        elif [[ ${name} == "z" ]] ; then
+                z=${val}
+		in_run_cols=$(echo ${run_cols} | grep ${z})
+		if [ ${#in_run_cols} -gt 0 ] ; then
+			condition="run_cond"
+		else
+			condition="fit_cond"
+		fi
+        elif [[ ${name} == "z_colors" ]] ; then
+                z_colors=${val}
+        elif [[ ${name} == "z_markers" ]] ; then
+                z_markers=${val}
+        elif [[ ${name} == "z_values" ]] ; then
+                z_values=$(echo ${val} | sed "s/,/ /g")
+        elif [[ ${name} == "z_names" ]] ; then
+                z_names=${val}
+        elif [[ ${name} == "z_title" ]] ; then
+                z_title=${val}
+        elif [[ ${name} == "z_round" ]] ; then
+                z_round=${val}
 	elif [[ ${name} == "error" ]] ; then
 		e=${val}
+        elif [[ ${name} == "x_title" ]] ; then
+                x_title=${val}
+        elif [[ ${name} == "y_title" ]] ; then
+                y_title=${val}
+        elif [[ ${name} == "title" ]] ; then
+                title=${val}
+        elif [[ ${name} == "pngFile" ]] ; then
+                png_file=${val}
+        elif [[ ${name} == "log_x" ]] ; then
+                log_x=${val}
+        elif [[ ${name} == "log_y" ]] ; then
+                log_y=${val}
+        elif [[ ${name} == "no-delete" ]] ; then
+                delete=0
         elif [[ ${name} == "high-light" ]] ; then
-                table="high_light_results"
-		csv_file="selected_high_light_runs.csv"
+		high_light=${name}
+		table="high_light_results"
+		csv_file="selected_high_light_fits.csv"
+		fit_list=$(head ${csv_file})
         fi
 done
 
-# Get list of fit ID's
-fits=$(head -n 1 ${csv_file} | sed "s/,/ /g")
+# Maybe delete the previous results
+if [ ${delete} -eq 1 ] ; then
+	rm ?_file_*.txt
+fi
 
-rm x_file.txt 
-rm y_file.txt 
-rm ex_file.txt
-rm ey_file.txt
-
-# Loop through each for sql query
-for fitID in ${fits} ; do
-
-	# Grab the run_id for this run
-	query="USE gaindb; SELECT run_id FROM ${table} WHERE fit_id=${fitID}"
-	runID=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-
-	# Grab x value for this fitID
-	in_run_cols=$(echo ${run_cols} | grep ${x})
-	if [ ${#in_run_cols} -gt 0 ] ; then
-		query="USE gaindb; SELECT ${x} FROM run_params WHERE run_id=${runID}"
-		x_out=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+# Default titles
+if [ ${#x_title} -eq 0 ] ; then
+	if [[ ${x} == "ll" ]] ; then
+		x_title="Light-Level-on-Dial"
+	elif [[ ${x} == "gain" ]] ; then
+		x_title="Gain-(in-Millions)"
+	elif [[ ${x} == "mu_out" ]] ; then
+		x_title="Observed-Light-Level-(Mu)"
+	elif [[ ${x} == "hv" ]] ; then
+		x_title="Voltage"
+	elif [[ ${x} == "gain_error" ]] ; then
+		x_title="Gain-Error"
 	else
-		query="USE gaindb; SELECT ${x} FROM ${table} WHERE fit_id=${fitID}"
-		x_out=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+		x_title=${x}
 	fi
-
-	# Grab y value for this runID
-	in_run_cols=$(echo ${run_cols} | grep ${y})
-	if [ ${#in_run_cols} -gt 0 ] ; then
-		query="USE gaindb; SELECT ${y} FROM run_params WHERE run_id=${runID}"
-		y_out=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+fi
+if [ ${#y_title} -eq 0 ] ; then
+	if [[ ${y} == "ll" ]] ; then
+		y_title="Light-Level-on-Dial"
+	elif [[ ${y} == "mu_out" ]] ; then
+		y_title="Observed-Light-Level-(Mu)"
+	elif [[ ${y} == "hv" ]] ; then
+		y_title="Voltage"
+	elif [[ ${y} == "gain" ]] ; then
+		y_title="Gain-(in-Millions)"
+	elif [[ ${y} == "gain_error" ]] ; then
+		y_title="Gain-Error"
 	else
-		query="USE gaindb; SELECT ${y} FROM ${table} WHERE fit_id=${fitID}"
-		y_out=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+		y_title=${y}
 	fi
-
-	# Grab error value for this runID
-	if [ ${#e} -gt 0 ] ; then
-		in_fit_cols=$(echo ${fit_cols} | grep ${e})
-	fi
-	if [ ${#in_fit_cols} -gt 0 ] ; then
-		query="USE gaindb; SELECT ${e} FROM ${table} WHERE fit_id=${fitID}"
-		ey_out=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	fi
-
-	# Send values to file
-	for val in ${y_out} ; do
-		if [ ${#val} -gt 0 -a ${#x_out} -gt 0 ] ; then
-			echo ${x_out} >> x_file.txt
-			echo ${val} >> y_file.txt
-			if [ ${#ey_out} -gt 0 ] ; then
-				echo ${ey_out} >> ey_file.txt
-			fi
-		fi
-	done
-done
-
-
-if [[ ${x} == "hv" && ${y} == "gain" ]] ; then
-	if [ ${#ey_out} -gt 0 ] ; then
-		root -l "make_gain_plot_error.c()"
-	else
-		root -l "make_gain_plot.c()"
-	fi
-else
-	if [ ${#ey_out} -gt 0 ] ; then
-		root -l "make_plot_error.c()"
-	else
-		root -l "make_plot.c()"
+fi
+if [ ${#z} -gt 0 -a ${#z_names} -eq 0 ] ; then
+	z_names=$(echo ${z_values} | sed "s/ /,/g")
+fi
+if [ ${#z} -gt 0 -a ${#z_title} -eq 0 ] ; then
+	z_title=${z}
+fi
+if [[ ${z_title} == "none" ]] ; then
+	z_title=""
+fi
+if [ ${#title} -eq 0 ] ; then
+	title="${y_title}-vs-${x_title}"
+	if [ ${#z} -gt 0 ] ; then
+		title="${title}-spread-over-${z}"
 	fi
 fi
 
 
+# Loop over the z values, fill the files one color at a time
+max_color_index=$(echo ${z_colors} | awk -F',' '{print NF}')
+for cur_val in ${z_values} ; do
+
+	# Create files for this value
+	cur_color=$(echo ${z_colors} | awk -v var=${current_color_index} -F',' '{print $var}')
+	./sql_select.sh ${high_light} ${condition}="ROUND(${z},${z_round})=${cur_val}" fit_list=${fit_list}
+	./sql_write_data_arrays.sh ${high_light} x=${x} y=${y} e=${y_error} color=${cur_color}
+
+	colors_used="${colors_used},${cur_color}"
+	check=$(head x_file_${cur_color}.txt)
+	current_color_index=$((current_color_index + 1))
+	if [ ${current_color_index} -gt ${max_color_index} ] ; then
+		current_color_index=1
+	fi
+done
+
+echo ${fit_list} > ${csv_file}
+
+# Run the root macro that will read the data files and form graph, send in title info
+if [ ${#png_file} -gt 0 ] ; then
+	root_options="-l -b -q"
+else
+	root_options="-l"
+fi
+root ${root_options} "make_plots.c(\"${colors_used}\", \"${title}\", \"${x_title}\", \"${y_title}\", \"${z_names}\", \"${z_title}\", \"${z_markers}\", \"${y_error}\", \"${png_file}\", ${log_x}, ${log_y}, ${x_error})"

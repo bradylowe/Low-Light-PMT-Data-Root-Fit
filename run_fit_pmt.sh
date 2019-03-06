@@ -16,6 +16,20 @@ data_dir=$(grep data_dir setup.txt | awk -F'=' '{print $2}')
 im_dir=$(grep im_dir setup.txt | awk -F'=' '{print $2}')
 
 
+adc_range=0
+legend=0
+conInj=0
+conGain=20
+conLL=20
+randomChanges=20
+low=1000
+high=150
+savePNG=1
+saveNN=0
+fitEngine=0
+noExpo=2
+noSQL=0
+
 # Decode input parameters
 for item in $* ; do
 	name=$(echo ${item} | awk -F'=' '{print $1 }')
@@ -41,6 +55,8 @@ for item in $* ; do
 	# Get rid of exponential
 	elif [[ ${name} == "noExpo" ]] ; then
 		noExpo=${val}
+	elif [[ ${name} == "randomChanges" ]] ; then
+		randomChanges=${val}
 	# Root Filename (if null, all will be used)
 	elif [[ ${name} == "rootFile" ]] ; then
 		rootFile=${val}
@@ -71,6 +87,11 @@ for item in $* ; do
 	# Set label at fit time
 	elif [[ ${name} == "label" ]] ; then
 		label=${val}
+	elif [[ ${name} == "legend" ]] ; then
+		legend=${val}
+	# Choose ADC range to look at
+	elif [[ ${name} == "adc_range" ]] ; then
+		adc_range=${val}
 	fi	
 done
 
@@ -79,46 +100,7 @@ done
 # Correct errors
 ##########################################################
 
-# Initialize no gain constrain
-if [ ${#conGain} -eq 0 ] ; then
-	conGain=10
-fi
-# Initialize full ped injection rate constrain
-if [ ${#conInj} -eq 0 ] ; then
-	conInj=0
-fi
-# Initialize no light level constraint
-if [ ${#conLL} -eq 0 ] ; then
-	conLL=10
-fi
-# Initialize low threshold
-if [ ${#low} -eq 0 ] ; then
-	low=1000
-fi
-# Initialize high threshold
-if [ ${#high} -eq 0 ] ; then
-	high=1
-fi
-# Initialize savePNG
-if [ ${#savePNG} -eq 0 ] ; then
-	savePNG=1
-fi
-# Initialize saveNN
-if [ ${#saveNN} -eq 0 ] ; then
-	saveNN=0
-fi
-# Initialize fitEngine selection
-if [ ${#fitEngine} -eq 0 ] ; then
-	fitEngine=0
-fi
-# Init noExpo to false
-if [ ${#noExpo} -eq 0 ] ; then
-	noExpo=0
-fi
-# Init noSQL to false
-if [ ${#noSQL} -eq 0 ] ; then
-	noSQL=0
-fi
+
 # Check for filename and grab corresponding run_id
 if [ ${#rootFile} -gt 0 -a ${#run_id} -eq 0 ] ; then
 	run_id=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "USE gaindb; SELECT run_id FROM run_params WHERE rootfile = '${rootfile}';")
@@ -155,7 +137,7 @@ for cur_id in ${run_list} ; do
 		rootOptions="-l -b -q"
 	fi
 	# Fit the data, grab chi squared per ndf
-	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $6, $7, $8, $9, ${12}, ${13}, ${low}, ${high}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo})")
+	chi2=$(root ${rootOptions} "fit_pmt_wrapper.c(\"${data_dir}/${15}\", ${cur_id}, ${fitID}, $2, $3, ${11}, ${10}, $5, $6, $7, $8, $9, ${12}, ${13}, ${adc_range}, ${low}, ${high}, ${conInj}, ${conGain}, ${conLL}, ${savePNG}, ${saveNN}, ${fitEngine}, ${noExpo}, ${randomChanges})")
 	chi2=$(echo ${chi2} | awk -F' ' '{print $NF}')
 	
 	# Process the human-viewable output pngs
@@ -187,20 +169,27 @@ for cur_id in ${run_list} ; do
 	# Query the database to store all output info from this fit
 	if [ -f ${sqlfile} -a ${noSQL} -eq 0 ] ; then
 		# Move the images to the storage directories
+		dir_num=$((fit_id/1000))
 		if [ ${savePNG} -gt 0 ] ; then
-			mv ${bothpng} ${im_dir}/png_fit/.
+			if [ ! -d ${im_dir}/png_fit/${dir_num} ] ; then
+				mkdir ${im_dir}/png_fit/${dir_num} 
+			fi
+			mv ${bothpng} ${im_dir}/png_fit/${dir_num}/.
 		fi
 		if [ ${saveNN} -gt 0 ] ; then
-			mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/.
+			if [ ! -d ${im_dir}/png_fit_nn/${dir_num} ] ; then
+				mkdir ${im_dir}/png_fit_nn/${dir_num} 
+			fi
+			mv ${nnpng} ${nnlogpng} ${im_dir}/png_fit_nn/${dir_num}/.
 		fi
 		# Initialize the update query
 		query="USE gaindb; UPDATE fit_results SET $(head -n 1 ${sqlfile})"
 		# If we are saving png output, update database with absolute file path
 		if [ ${savePNG} -gt 0 ] ; then
-			query="${query},human_png='png_fit/${bothpng}'"
+			query="${query},human_png='png_fit/${dir_num}/${bothpng}'"
 		fi 
 		if [ ${saveNN} -gt 0 ] ; then
-			query="${query},nn_png='png_fit_nn/${nnpng}'"
+			query="${query},nn_png='png_fit_nn/${dir_num}/${nnpng}'"
 		fi 
 		query="${query} WHERE fit_id=${fitID};"
 		# We don't want anything that is "not a number"

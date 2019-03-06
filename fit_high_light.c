@@ -9,7 +9,7 @@
 #include <fstream>
 
 #include "Math/SpecFunc.h"
-#include "dataAnalyzer.c"
+#include "fit_pmt_functions.c"
 
 #include <TMinuit.h>
 #include <TApplication.h>
@@ -33,7 +33,7 @@ double sig_fit(Double_t *x, Double_t *par) {
 double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t savePNG = 0, Int_t scale = 0) {
 
 	// Make output png filename
-	string pngFile = Form("high_light_%d.png", fitID);
+	string pngFile = Form("high_light_%d.png", runID);
 
 	// Define canvas
 	gStyle->SetOptFit(11111111);
@@ -81,7 +81,7 @@ double fit_high_light(string rootFile, Int_t runID = 0, Int_t fitID = 0, Int_t s
 	// Grab a few statistics from the raw data
 	Int_t nevents = rawData->GetEntries();
 	Int_t maxVal = rawData->GetMaximum();
-	Int_t low = rawData->FindFirstBinAbove(1) - 15;
+	Int_t low = rawData->FindFirstBinAbove(1) - 50;
 	Int_t high = rawData->FindLastBinAbove(1) + 15;
 	if (low < 0) low = 0;
 	if (high > 4095) high = 4095;

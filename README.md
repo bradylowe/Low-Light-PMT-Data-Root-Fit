@@ -8,7 +8,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
 
 *Quick start:*
  - First, open setup.txt and set the correct values for directories
- - Next, run ./sql_select_runs.sh run_cond="hv=2000&&pmt=1"
+ - Next, run ./sql_select.sh runs run_cond="hv=2000&&pmt=1"
  - Then, run ./run_fit_pmt.sh
  - To view the results of what you just ran (up to 20 fits), execute:
     * mysql -u user -p -e "USE gaindb; SELECT fit_id, gain, chi FROM fit_results ORDER BY fit_id DESC LIMIT 20;"
@@ -50,6 +50,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
     * conLL (constrain ll)
     * pedInj (initial pedestal injection rate guess)
     * conInj (constrain)
+    * randomChanges (try different initial guesses)
     * rootFile (source data filename)
     * fitEngine (Root fit engine options)
     * tile (for custom montage tiling)
@@ -58,7 +59,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
     * run_id (single run id to fit)
  - If the user sends in either a "rootFile" or a single "run_id", then the script will allow Root to remain open for the user to interact with. Otherwise, Root will be ran in batch mode and only saved output will remain.
  - After the root macro has performed the fit and saved its output pngs and SQL query textfile, this script may use the png in creating a montage, then it will put the png in its correct directory or delete it, and then the script will grab the SQL query from the text file and submit it to save the fit output to the gaindb database.
- - Example usage: ./run_fit_pmt.sh conGain=20 conLL=10 noExpo=1 
+ - Example usage: ./run_fit_pmt.sh conGain=20 conLL=10 randomChanges=10 noExpo=1 
 
 ### *fit_high_light.c*
  - This macro assumes a gaussian pedestal and a gaus+exp tail.
@@ -76,17 +77,19 @@ This repository houses code for modeling the response of photomultiplier tubes a
 ### *run_fit_pedestal.sh*
  - This script fits selected_runs.csv to the pedestal fit.
 
-### *run_batch.sh*
- -  This script runs the run_fit_pmt.sh script on a predefined list of run_id's with predefined input arguments. 
+### *analysis.sh*
+ - This script runs the run_fit_pmt.sh script on a predefined list of run_id's in selected_runs.csv.
  - This is a way to systematically analyze new data sets.
+ - This script runs many jobs in parallel and leaves it up to the OS to do parallelization.
+ - Each process with use around 1% of memory and up to 100% of a CPU core.
 
 ---
 ---
 ---
 
-### *sql_select_runs.sh*
- - This script takes in some sql conditional statements, selects corresponding run_ids, and writes them to selected_runs.csv.
- - Example usage:   ./sql_select_runs.sh fit run_cond="hv=2000&&ll<90"
+### *sql_select.sh*
+ - This script takes in some sql conditional statements, selects corresponding run_ids or fit_ids, and writes them to the proper output file (selected_blank.csv).
+ - Example usage:   ./sql_select.sh runs run_cond="hv=2000&&ll<90"
  - Through this shell script, we can select the quality of runs we want to see, recent data, or different voltage or light level regimes.
  - NOTE: pmt argument must be specified BEFORE the regime argument.
  - The "regime" parameter is sent in the form regime="_,_" or regime="_" where the "_" are replaced by:
@@ -94,27 +97,15 @@ This repository houses code for modeling the response of photomultiplier tubes a
     * lv for low voltage
     * hl for high light
     * hv for high voltage
- - The "quality" parameter here is just sent in as a flag to select runs with high statistics some light and voltage.
- - Here is a list of possible input parameters as well as possible values:
-    * quality
-    * recent=1
-    * run_cond="hv>1700&&hv<2000&&gate=100"
-    * regime="ll,hv"
-
-### *sql_select_fits.sh*
- - This script is just like the above, except it puts fit_ids into selected_fits.csv.
- - If the user sends in the "high-light" flag as a parameter, then the fit_high_light will be used instead (and selected_high_light_fits.csv).
- - In this script, the quality parameter ranges from 0 to 5 where:
+ - The "quality" parameter here is just sent in as a flag or sent in with a value to select runs with high statistics some light and voltage.
     * 0 returns all fits from quality data runs
     * 1 returns the above minus really horrible fits
     * 2 returns the above with fewer bad fits
     * 3 returns mainly good fits, but still some bad ones
     * 4 should only return good fits
     * 5 returns only 1 fit (the "best" one)
+ - If the user sends in the "high-light" flag as a parameter, then the fit_high_light will be used instead (and selected_high_light_fits.csv).
  - The quality parameter is only set up to be used with the low light fit. The high light fit should be easily sortable with chi2.
- - Here are a couple new parameters from the run_id version:
-    * quality=5
-    * fit_cond="chi<2&&mu_out<5.5"
 
 ### *sql_remove_fits.sh*
  - This script removes all the fits in selected_fits.csv
@@ -132,17 +123,23 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This script is just like the above, but it also grabs the errors column and returns it.
 
 ### *sql_make_plot.sh*
- - This script executes make_plot.c after grabbing values corresponding to selected_fits.csv
- - This script takes 2 parameters
+ - This script executes make_plots.c after grabbing values corresponding to selected_fits.csv
+ - This script takes many parameters to make a Y vs X plot with colored data points as Z-axis
     * x - independent variable
     * y - dependent variable
+    * z - color of data points (third free parameter)
+    * z_title, z_names, z_colors, z_markers
+    * x_title, y_title, z_title, title
  - The two parameters can be any numeric column value from either the run_params table OR the fit_results table. For a list of possibilities, execute:
     * ./sql_make_plot.sh help
  - Example usage:
-    * ./sql_make_plot.sh hv gain 
+    * ./sql_make_plot.sh x=hv y=gain z=ll z_values=30,35,40,45,50,60 z_colors=black,black,red,red,green,green z_markers=dot,star,cross z_title=Light-Level z_names=30-35,40-45,50-60
 
-### *sql_calibrate_gain(ll).sh*
- - This script finds the average measurement of any available good fits and updates the calibration file.
+### *sql_measure_gain(ll)(filter).sh*
+ - This script finds the average measurement of any available good fits.
+ - Each time this script runs, files are updated in the gain_measurement directory
+ - Sending in the flag "calibrate" as a parameter updates the files in the calibration directory.
+ - Optional arguments include:  run_cond, fit_cond, hv, ll, min_hv, filter, quality.
 
 ---
 ---
@@ -185,7 +182,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
  - This command should create the gaindb database and populate it with values. (If this is not the case, you must first define the gaindb database on your system and give your user all permissions over the database, described [here](https://dev.mysql.com/doc/refman/8.0/en/creating-database.html)).
 
 ### *pedestalFit.sh* 
- - This script needs sql_select_runs.sh to be ran before so that selected_runs.csv exists.
+ - This script needs sql_select.sh to be ran before so that selected_runs.csv exists.
  - This script executes a fit to the V965 pedestal (zero signal) events defined in pedestalFit.c.
  - This script will execute one fit at a time and wait for you to exit to show the next run.
 
@@ -198,7 +195,7 @@ This repository houses code for modeling the response of photomultiplier tubes a
     * u for "undo last label"
     * q for "quit"
 
-### *dataAnalyzer.c*
+### *fit_pmt_functions.c*
  - This file is where custom Root functions are defined for convenience in coding the fit_pmt algorithm.
  - Some of the defined functions are:
     * myStoi(string) for converting strings to integers

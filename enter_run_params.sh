@@ -15,7 +15,7 @@
 ####################################################################
 
 # Initialize values to be input into table
-pmt=6
+pmt=1
 if [ ${pmt} -lt 5 ] ; then
 	base=1
 else
@@ -24,6 +24,7 @@ fi
 hv=2000
 filter=7
 ll=0
+daq=3
 adc="v965ST"
 chan="12"
 gate="100"
@@ -35,9 +36,19 @@ nevents=500000
 # Move to the data directory
 cd $(grep data_dir setup.txt | awk -F'=' '{print $2}')
 
-# Grab the files from the daq
-selected_files=$(ls daq3/r3*.root)
-selected_files="${selected_files} $(ls daq5/r*.root)"
+# Grab the files
+if [ ${#1} -gt 0 -a ${#2} -gt 0 ] ; then
+	daq=$1
+	run_nums=$2
+	run_nums=$(echo ${run_nums} | sed "s/,/ /g")
+	selected_files=""
+	for cur_run in ${run_nums} ; do
+		selected_files="${selected_files} $(ls daq${daq}/r${cur_run}*.root)"
+	done
+else
+	selected_files=$(ls daq3/r3*.root)
+	selected_files="${selected_files} $(ls daq5/r*.root)"
+fi
 
 # SET INPUT VALUE FOR ALL SELECTED RUNS
 for rootfile in ${selected_files} ; do
@@ -45,6 +56,7 @@ for rootfile in ${selected_files} ; do
 	# Skip this one if already in database
 	query="USE gaindb; SELECT run_id FROM run_params WHERE rootfile='${rootfile}';"
 	run_id=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
+echo ${run_id}
 	if [ ${#run_id} -gt 0 ] ; then
 		continue
 	fi
@@ -64,9 +76,12 @@ for rootfile in ${selected_files} ; do
 	# Only do files that have bigger run numbers than the ones we have
 	query="USE gaindb; SELECT MAX(run_num) FROM run_params WHERE daq=${daq};"
 	max_run_num=$(mysql --defaults-extra-file=~/.mysql.cnf -Bse "${query}")
-	if [ ${run_num} -lt ${max_run_num} ] ; then
+echo ${run_num}
+	if [ ${#1} -eq 0 -a ${run_num} -lt ${max_run_num} ] ; then
+echo hello
 		continue
 	fi
+echo hello
 
 	echo "---------------------------------"
 	echo "For ${rootfile}"
