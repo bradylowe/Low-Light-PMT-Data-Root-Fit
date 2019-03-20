@@ -13,6 +13,7 @@
 
 #include "Math/SpecFunc.h"
 #include "fit_pmt_functions.c"
+#include "root_models.c"
 
 #include <TMinuit.h>
 #include <TApplication.h>
@@ -83,10 +84,10 @@ void make_gain_plot(string color = "black", string title = "Gain vs. High Voltag
 	fit_line->SetParameter(0, -2.0);
 	fit_line->SetParameter(1, 0.001);
 	fit_line->SetLineColor(6);
-	TF1 *fit_hamamatsu = new TF1("fit_hama", power_curve_hamamatsu, low, max, 1);
-	fit_hamamatsu->SetParameter(0, 1e-12);
+	//TF1 *fit_hamamatsu = new TF1("fit_hama", power_curve_hamamatsu, low, max, 1);
+	//fit_hamamatsu->SetParameter(0, 1e-12);
 //	gr1->Fit(fit_hamamatsu, "RS", "", max * 0.08, max * 0.9);
-	gr1->Fit(fit_power, "RS", "", max * 0.08, max * 0.80);
+	gr1->Fit(fit_power, "RS", "", max * 0.08, max * 1.00);
 //	gr1->Fit(fit_power2, "RS+", "", max * 0.85, max * 1.01);
-  	gr1->Fit(fit_line, "RS+", "", max * 0.8, max * 1.01);
+//  	gr1->Fit(fit_line, "RS+", "", max * 0.8, max * 1.01);
 }
